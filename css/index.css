@@ -1,0 +1,102 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+a:link, a:hover, a:visited, a:active {
+    text-decoration: none;
+}
+
+ol, ul {
+    list-style: none;
+}
+
+html, body {
+    height: 100%;
+}
+
+.public-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.public-side {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 80px;
+    bottom: 0;
+    box-sizing: border-box;
+    padding: 8px 12px;
+}
+
+.public-main {
+    position: absolute;
+    top: 0;
+    left: 80px;
+    right: 0;
+    bottom: 0;
+    box-sizing: border-box;
+    padding: 8px 12px;
+}
+
+.list-container {
+
+}
+
+.list-container .list-item {
+    display: flex;
+    height: 40px;
+    line-height: 40px;
+}
+
+.list-item .icon {
+    flex-basis: 2%;
+}
+
+.file-box {
+    flex-basis: 60%;
+}
+
+.btn-box {
+    display: flex;
+    flex-basis: 40%;
+}
+
+.btn-box li {
+    flex-basis: 115px;
+    text-align: center;
+    align-items: flex-end;
+}
+
+.btn-box li a {
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+}
+
+.add-file-btn {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    margin-left: -17px;
+    width: 35px;
+    height: 35px;
+    background: #fff;
+    border: 2px solid #333;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.add-file-btn .icon-plus {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin-left: -7px;
+    margin-top: -8px;
+}
