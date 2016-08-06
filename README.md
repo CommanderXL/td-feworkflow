@@ -13,13 +13,13 @@
 
 ###文件目录结构
 
-|-----js
-|-----css
-|-----images
-|-----pages
-|-----src
-|   |----js
-|   |----css
-|   |----images
-|   |----pages
-|   |----rev
+|-----js<br/>
+|-----css<br/>
+|-----images<br/>
+|-----pages<br/>
+|-----src<br/>
+|   |----js<br/>
+|   |----css<br/>
+|   |----images<br/>
+|   |----pages<br/>
+|   |----rev<br/>
