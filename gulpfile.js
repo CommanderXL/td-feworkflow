@@ -102,8 +102,8 @@ var getFileOperation = function (file) {
     }
 };
 
-//path 源文件的路径
-//目标文件的路径
+//_path 源文件的路径
+//dest 目标文件的路径
 var operateFn = function (_path, dest) {
     var pathArr = _path.split('/'),
         file = pathArr[pathArr.length - 1],
