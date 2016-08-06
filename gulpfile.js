@@ -34,18 +34,42 @@ function concatCss(src, dest) {
 // js or css mini
 var getMiniFn = function (flag) {
     return function (src, dest, revPath) {
-        var behavior = (flag === 'js' ? $$.uglify : $$.cleanCss),
+        var behavior,
             stream = gulp.src(src),
             cwd = process.cwd();
 
-        stream.pipe(behavior())
-            .pipe($$.rev())
-            .pipe(gulp.dest(dest))
-            .pipe($$.rev.manifest(path.resolve(revPath, './rev/manifest.json'), {
-                base: path.resolve(revPath, './rev'),
-                merge: true
-            }))
-            .pipe(gulp.dest(path.resolve(revPath, './rev')));
+        switch (flag) {
+            case 'js':
+                behavior = $$.uglify;
+                break;
+            case 'css':
+                behavior = $$.cleanCss;
+                break;
+            case 'img':
+                behavior = $$.imagemin;
+                break;
+            default :
+                break;
+        }
+
+        if(flag === 'js' || flag === 'css') {
+            behavior = (flag === 'js' ? $$.uglify : $$.cleanCss);
+
+
+            stream.pipe(behavior())
+                .pipe($$.rev())
+                .pipe(gulp.dest(dest))
+                .pipe($$.rev.manifest(path.resolve(revPath, 'manifest.json'), {
+                    base: revPath,
+                    merge: true
+                }))
+                .pipe(gulp.dest(revPath));
+        } else {
+            behavior = $$.imagemin;
+
+            stream.pipe(behavior())
+                .pipe(gulp.dest(dest))
+        }
     }
 };
 
@@ -69,13 +93,19 @@ var watchFn = function (src) {
 var getFileOperation = function (file) {
     var _arr = file.split('.'),
         suffix = _arr[_arr.length - 1];
-    return suffix === 'js' ? jsMini : cssMini;
+    if(suffix === 'js') {           //js处理
+        return jsMini;
+    } else if(suffix === 'css') {   //css处理
+        return cssMini;
+    } else {
+        return imgMini;             //图片处理
+    }
 };
 
 //path 源文件的路径
 //目标文件的路径
-var operateFn = function (path, dest) {
-    var pathArr = path.split('/'),
+var operateFn = function (_path, dest) {
+    var pathArr = _path.split('/'),
         file = pathArr[pathArr.length - 1],
         index =  file.indexOf('.'),
         behavior,
@@ -84,30 +114,33 @@ var operateFn = function (path, dest) {
     if(index != -1) {
         behavior = getFileOperation(file);
 
-        revPath = path;
+        revPath = path.resolve(_path, '../../../rev');
 
-        behavior(path, dest, revPath);
+        behavior(_path, dest, revPath);
     } else {
 
-        var _pathArr = path.split('/');
+        var _pathArr = _path.split('/');
 
         _pathArr.pop();
 
         revPath = _pathArr.join('/');
 
-        fs.readdir(path, function (err, fileNameArr) {
+        revPath = path.resolve(revPath, '../rev');
+
+
+        fs.readdir(_path, function (err, fileNameArr) {
             "use strict";
             fileNameArr.forEach(function (item, index) {
-                var _pattern = /\.(js|css)$/,
+                var _pattern = /\.(js|css|jpeg|png|gif)$/,
                     _match = item.match(_pattern);
 
-                if(_match[1]) {
+                if(_match && _match[1]) {
                     return behavior = getFileOperation(item);
                 }
             });
 
             fileNameArr.forEach(function (item, index) {
-                fileNameArr[index] = path + '/' + item;
+                fileNameArr[index] = _path + '/' + item;
             });
             behavior(fileNameArr, dest, revPath);
         })
@@ -116,8 +149,10 @@ var operateFn = function (path, dest) {
 
 
 
+
 var cssMini = getMiniFn('css'),
-    jsMini = getMiniFn('js');
+    jsMini = getMiniFn('js'),
+    imgMini = getMiniFn('img');
 
 
 
@@ -160,14 +195,14 @@ var cssMini = getMiniFn('css'),
         $('.list-container').delegate('.uglify-btn', 'click', function () {
             "use strict";
             var srcPath = $(this).parent().parent().prev().data('file'),
-                pattern = /src\/(\w+)/,
-                _pattern = /src(\/\w+)+/g;
+                _pattern = /src(\/\w+\.?\w*)+/g;
 
-            var destFile = srcPath.match(pattern)[1],
-                destPath;
+            var _srcPath = srcPath.match(_pattern)[0],
+                _pathArr = _srcPath.split('/'),
+                _destFile = [_pathArr[1], _pathArr[2]].join('/');
 
-            destPath = srcPath.replace(_pattern, '') + destFile;
 
+            var destPath = srcPath.replace(_pattern, '') + _destFile;
 
             operateFn(srcPath, destPath);
         });
@@ -178,9 +213,9 @@ var cssMini = getMiniFn('css'),
             var path = $(this).parent().parent().prev().data('file');
         });
 
-        //复制
+        //图片压缩复制
         $('.list-container').delegate('.copy-btn', 'click', function () {
-            var path = $(this).parent().parent().prev().data('file');
+            var srcPath = $(this).parent().parent().prev().data('file');
         });
 
 
