@@ -1,16 +1,29 @@
 {
-  "name": "workflowGUI",
-  "version": "0.0.0",
-  "description": "",
+  "name": "td-feworkflow",
+  "version": "0.0.1",
+  "description": "taxi-driver workflow GUI",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "packageDarwin": "rm -rf dist && electron-packager . 'td-feworkflow' --platform=darwin --arch=x64 --icon=td.icns --out=./dist --version=1.3.2 --ignore='(.gitignore|LICENSE|README.md|.DS_Store)'",
+    "packageWin": "electron-packager . 'Hosts' --platform=win32 --arch=x64 --icon=hosts.ico --out=./dist --asar --ignore='(css|dist|fonts|src|docs|.gitignore|LICENSE|README.md|hosts.icns|hosts.ico|webpack.config.js|node_modules/(?!sudo-prompt))'",
+    "packageLinux": "electron-packager . 'Hosts' --platform=linux --arch=x64 --out=./dist --asar --ignore='(css|dist|fonts|src|docs|.gitignore|LICENSE|README.md|hosts.icns|hosts.ico|webpack.config.js|node_modules/(?!sudo-prompt))'",
+    "prepackage": "rm -rf build && webpack && rm -rf dist",
+    "package": "npm run packageDarwin && npm run packageWin && npm run packageLinux"
   },
-  "author": "",
+  "keywords": [
+    "Electron",
+    "workflow",
+    "GUI"
+  ],
+  "author": "XRene",
   "license": "ISC",
   "devDependencies": {
+    "electron-packager": "^7.5.1"
+  },
+  "dependencies": {
     "bootstrap": "^3.3.7",
     "browser-sync": "^2.14.0",
+    "electron-packager": "^7.5.1",
     "gulp": "^3.9.1",
     "gulp-clean-css": "^2.0.12",
     "gulp-concat": "^2.6.0",

@@ -202,70 +202,71 @@ var getInfo = function () {
     return tips;
 };
 
+var init = function () {
+    var fileInput = document.querySelector('input[type=file]'),
+        btn = document.querySelector('button');
+
+    var addFileBtn = $('.add-file-btn');
 
 
-    module.exports = function () {
-        var fileInput = document.querySelector('input[type=file]'),
-            btn = document.querySelector('button');
+    addFileBtn.on('click', function () {
+        //唤起native选择框
+        dialog.showOpenDialog(dialogConfig, function (filename) {
 
-        var addFileBtn = $('.add-file-btn');
+            //取消按钮操作
+            if(filename.length === 0) return;
 
-
-        addFileBtn.on('click', function () {
-            //唤起native选择框
-            dialog.showOpenDialog(dialogConfig, function (filename) {
-
-                //取消按钮操作
-                if(filename.length === 0) return;
-
-                var html = [
-                    '<li class="list-item">',
-                    /*'<span class="icon icon-large icon-file-alt"></span>',*/
-                    '<div class="file-box" data-file="',
-                    filename[0],
-                    '">',
-                    filename[0],
-                    '</div>',
-                    '<ul class="btn-box">',
-                    '<li><a href="##" class="btn btn-default uglify-btn" data-whatever="压缩完成!" data-target="#myModal" data-toggle="modal" role="button" data-loading-text="压缩中....">压缩</a></li><li><a href="##" class="btn btn-default md5-btn" data-whatever="MD5完成!" data-target="#myModal" data-toggle="modal"  role="button" data-loading-text="MD5ing">MD5</a></li><li><a href="##" class="btn btn-danger dev-btn" data-whatever="启动完成!" data-tips="PC端访问根路径:localhost:3000;\nMoblie访问根路径:192.168.1.101:3000"  data-loading-text="启动ing..." role="button">开发</a></li>',
-                    '</ul>',
-                    '</li>'
-                ].join('');
+            var html = [
+                '<li class="list-item">',
+                /*'<span class="icon icon-large icon-file-alt"></span>',*/
+                '<div class="file-box" data-file="',
+                filename[0],
+                '">',
+                filename[0],
+                '</div>',
+                '<ul class="btn-box">',
+                '<li><a href="##" class="btn btn-default uglify-btn" data-whatever="压缩完成!" data-target="#myModal" data-toggle="modal" role="button" data-loading-text="压缩中....">压缩</a></li><li><a href="##" class="btn btn-default md5-btn" data-whatever="MD5完成!" data-target="#myModal" data-toggle="modal"  role="button" data-loading-text="MD5ing">MD5</a></li><li><a href="##" class="btn btn-danger dev-btn" data-whatever="启动完成!" data-tips="PC端访问根路径:localhost:3000;\nMoblie访问根路径:192.168.1.101:3000"  data-loading-text="启动ing..." role="button">开发</a></li>',
+                '</ul>',
+                '</li>'
+            ].join('');
 
 
-                $('.list-container').append(html);
+            $('.list-container').append(html);
 
-            });
         });
+    });
 
 
-        //压缩混淆
-        $('.list-container').delegate('.uglify-btn', 'click', function () {
-            "use strict";
-            var srcPath = $(this).parent().parent().prev().data('file');
+    //压缩混淆
+    $('.list-container').delegate('.uglify-btn', 'click', function () {
+        "use strict";
+        var srcPath = $(this).parent().parent().prev().data('file');
 
-            operateFn(srcPath, getDestPath(srcPath), getInfo.call(this));
-        });
+        operateFn(srcPath, getDestPath(srcPath), getInfo.call(this));
+    });
 
-        //MD5追加版本号
-        $('.list-container').delegate('.md5-btn', 'click', function () {
-            "use strict";
-            var srcPath = $(this).parent().parent().prev().data('file');
+    //MD5追加版本号
+    $('.list-container').delegate('.md5-btn', 'click', function () {
+        "use strict";
+        var srcPath = $(this).parent().parent().prev().data('file');
 
-            operateFn(srcPath, getDestPath(srcPath), getInfo.call(this));
-        });
+        operateFn(srcPath, getDestPath(srcPath), getInfo.call(this));
+    });
 
-        //开发 页面无刷新
-        $('.list-container').delegate('.dev-btn', 'click', function () {
-            var srcPath = $(this).parent().parent().prev().data('file');
+    //开发 页面无刷新
+    $('.list-container').delegate('.dev-btn', 'click', function () {
+        var srcPath = $(this).parent().parent().prev().data('file');
 
-            /*var $btn = $(this).button('loading');
+        /*var $btn = $(this).button('loading');
 
-            setTimeout(function () {
-                $btn.button('reset');
-            }, 3000);*/
+         setTimeout(function () {
+         $btn.button('reset');
+         }, 3000);*/
 
-            watchFn(srcPath, getInfo.call(this));
-        });
+        watchFn(srcPath, getInfo.call(this));
+    });
+};
 
-    };
+
+init();
+
