@@ -7,6 +7,7 @@ var dialog = require('electron').remote.dialog,
     gulp = require('gulp'),
     $$ = require('gulp-load-plugins')(),
     path = require('path'),
+    browserSync = require('browser-sync').create(),
     fs = require('fs');
 
 
@@ -73,6 +74,15 @@ var getMiniFn = function (flag) {
     }
 };
 
+
+/*browserSync.init({
+    server: {
+        baseDir: '../test/src'
+    }
+});
+
+gulp.watch("../test/src/pages/!**!/!*.html").on("change", browserSync.reload);
+gulp.watch('../test/src/css/!**!/!*.css').on('change', browserSync.reload);*/
 
 //静态服务器,  多端都可以查看(browser)
 var watchFn = function (src) {
@@ -179,7 +189,7 @@ var cssMini = getMiniFn('css'),
                     filename[0],
                     '</div>',
                     '<ul class="btn-box">',
-                    '<li><a href="##" class="uglify-btn">压缩</a></li><li><a href="##" class="complie-btn">编译</a></li><li><a href="##" class="copy-btn">复制到文件夹</a></li>',
+                    '<li><a href="##" class="uglify-btn">压缩</a></li><li><a href="##" class="complie-btn">编译</a></li><li><a href="##" class="dev-btn">开发</a></li>',
                     '</ul>',
                     '</li>'
                 ].join('');
@@ -214,8 +224,20 @@ var cssMini = getMiniFn('css'),
         });
 
         //图片压缩复制
-        $('.list-container').delegate('.copy-btn', 'click', function () {
+        $('.list-container').delegate('.dev-btn', 'click', function () {
             var srcPath = $(this).parent().parent().prev().data('file');
+
+
+            browserSync.init({
+                server: {
+                    baseDir: srcPath
+                }
+            });
+
+            gulp.watch([path.resolve(srcPath, 'pages/**/*.html'),
+                path.resolve(srcPath, 'css/**/*.css'),
+                path.resolve(srcPath, 'js/**/*.js')])
+                .on('change', browserSync.reload)
         });
 
 
