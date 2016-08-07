@@ -34,7 +34,7 @@ function concatCss(src, dest) {
 
 // js or css mini
 var getMiniFn = function (flag) {
-    return function (src, dest, revPath) {
+    return function (src, dest, revPath, info) {
         var behavior,
             stream = gulp.src(src),
             cwd = process.cwd();
@@ -80,12 +80,14 @@ var getMiniFn = function (flag) {
             stream.pipe(behavior())
                 .pipe(gulp.dest(dest));
         }
+
+        modalOperateFn(info);
     }
 };
 
 
 //静态服务器,  多端都可以查看(browser)
-var watchFn = function (srcPath) {
+var watchFn = function (srcPath, info) {
     browserSync.init({
         server: {
             baseDir: srcPath
@@ -96,6 +98,8 @@ var watchFn = function (srcPath) {
         path.resolve(srcPath, 'css/**/*.css'),
         path.resolve(srcPath, 'js/**/*.js')])
         .on('change', browserSync.reload)
+
+    modalOperateFn(info);
 };
 
 
@@ -115,7 +119,7 @@ var getFileOperation = function (file) {
 
 //_path 源文件的路径
 //dest 目标文件的路径
-var operateFn = function (_path, dest) {
+var operateFn = function (_path, dest, info) {
     var pathArr = _path.split('/'),
         file = pathArr[pathArr.length - 1],
         index =  file.indexOf('.'),
@@ -127,7 +131,7 @@ var operateFn = function (_path, dest) {
 
         revPath = path.resolve(_path, '../../../rev');
 
-        behavior(_path, dest, revPath);
+        behavior(_path, dest, revPath, info);
     } else {
 
         var _pathArr = _path.split('/');
@@ -153,11 +157,12 @@ var operateFn = function (_path, dest) {
             fileNameArr.forEach(function (item, index) {
                 fileNameArr[index] = _path + '/' + item;
             });
-            behavior(fileNameArr, dest, revPath);
+            behavior(fileNameArr, dest, revPath, info);
         })
     }
 };
 
+//获取目标文件的路径
 var getDestPath = function (srcPath) {
 
     var _pattern = /src(\/\w+\.?\w*)+/g,
@@ -171,6 +176,15 @@ var getDestPath = function (srcPath) {
     return destPath;
 };
 
+//modal控制函数
+//info modal需要显示的信息
+var modalOperateFn = function (info) {
+    var modal = $('#myModal');
+    modal.modal();
+    modal.find('.modal-title').text(info.title);
+    modal.find('.modal-body').text(info.tips);
+};
+
 
 
 
@@ -178,6 +192,15 @@ var cssMini = getMiniFn('css'),
     jsMini = getMiniFn('js'),
     imgMini = getMiniFn('img'),
     htmlMini = getMiniFn('html');
+
+
+var getInfo = function () {
+    var tips = {
+        title: $(this).data('whatever') ? $(this).data('whatever') : '',
+        tips: $(this).data('tips') ? $(this).data('tips') : ''
+    };
+    return tips;
+};
 
 
 
@@ -204,7 +227,7 @@ var cssMini = getMiniFn('css'),
                     filename[0],
                     '</div>',
                     '<ul class="btn-box">',
-                    '<li><a href="##" class="uglify-btn">压缩</a></li><li><a href="##" class="md5-btn">MD5</a></li><li><a href="##" class="dev-btn">开发</a></li>',
+                    '<li><a href="##" class="btn btn-default uglify-btn" data-whatever="压缩完成!" data-target="#myModal" data-toggle="modal" role="button" data-loading-text="压缩中....">压缩</a></li><li><a href="##" class="btn btn-default md5-btn" data-whatever="MD5完成!" data-target="#myModal" data-toggle="modal"  role="button" data-loading-text="MD5ing">MD5</a></li><li><a href="##" class="btn btn-danger dev-btn" data-whatever="启动完成!" data-tips="PC端访问根路径:localhost:3000;\nMoblie访问根路径:192.168.1.101:3000"  data-loading-text="启动ing..." role="button">开发</a></li>',
                     '</ul>',
                     '</li>'
                 ].join('');
@@ -221,7 +244,7 @@ var cssMini = getMiniFn('css'),
             "use strict";
             var srcPath = $(this).parent().parent().prev().data('file');
 
-            operateFn(srcPath, getDestPath(srcPath));
+            operateFn(srcPath, getDestPath(srcPath), getInfo.call(this));
         });
 
         //MD5追加版本号
@@ -229,14 +252,20 @@ var cssMini = getMiniFn('css'),
             "use strict";
             var srcPath = $(this).parent().parent().prev().data('file');
 
-            operateFn(srcPath, getDestPath(srcPath))
+            operateFn(srcPath, getDestPath(srcPath), getInfo.call(this));
         });
 
         //开发 页面无刷新
         $('.list-container').delegate('.dev-btn', 'click', function () {
             var srcPath = $(this).parent().parent().prev().data('file');
 
-            watchFn(srcPath);
+            var $btn = $(this).button('loading');
+
+            setTimeout(function () {
+                $btn.button('reset');
+            }, 3000);
+
+            watchFn(srcPath, getInfo.call(this));
         });
 
     };

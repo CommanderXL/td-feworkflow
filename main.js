@@ -11,7 +11,7 @@ var win;
 
 function createWin() {
     "use strict";
-    win = new browserWindow({width: 1200, height: 600});
+    win = new browserWindow({width: 1000, height: 600});
 
     win.loadURL('file://' + __dirname + '/index.html' );
 
