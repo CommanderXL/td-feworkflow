@@ -49,6 +49,8 @@ var getMiniFn = function (flag) {
             case 'img':
                 behavior = $$.imagemin;
                 break;
+            case 'html':
+                behavior = $$.revReplace;
             default :
                 break;
         }
@@ -65,38 +67,35 @@ var getMiniFn = function (flag) {
                     merge: true
                 }))
                 .pipe(gulp.dest(revPath));
+        } else if(flag === 'html'){
+            behavior = $$.revReplace;
+
+            var manifest = gulp.src(path.resolve(revPath, 'manifest.json'));
+            stream.pipe(behavior({manifest: manifest}))
+                .pipe($$.replace())
+                .pipe(gulp.dest(dest));
         } else {
             behavior = $$.imagemin;
 
             stream.pipe(behavior())
-                .pipe(gulp.dest(dest))
+                .pipe(gulp.dest(dest));
         }
     }
 };
 
 
-/*browserSync.init({
-    server: {
-        baseDir: '../test/src'
-    }
-});
-
-gulp.watch("../test/src/pages/!**!/!*.html").on("change", browserSync.reload);
-gulp.watch('../test/src/css/!**!/!*.css').on('change', browserSync.reload);*/
-
 //静态服务器,  多端都可以查看(browser)
-var watchFn = function (src) {
-    gulp.watch(['./index.html', './css/**'], function () {
-        gulp.src(['./index.html', './css/**'])
-            .pipe($$.connect.reload());
+var watchFn = function (srcPath) {
+    browserSync.init({
+        server: {
+            baseDir: srcPath
+        }
     });
 
-    $$.connect.server({
-        name: 'dev app',
-        port: 8000,
-        root: './',
-        livereload: true
-    });
+    gulp.watch([path.resolve(srcPath, 'pages/**/*.html'),
+        path.resolve(srcPath, 'css/**/*.css'),
+        path.resolve(srcPath, 'js/**/*.js')])
+        .on('change', browserSync.reload)
 };
 
 
@@ -107,8 +106,10 @@ var getFileOperation = function (file) {
         return jsMini;
     } else if(suffix === 'css') {   //css处理
         return cssMini;
+    } else if(suffix === 'html'){
+        return htmlMini;             //html文件打版本号
     } else {
-        return imgMini;             //图片处理
+        return imgMini;              //图片压缩
     }
 };
 
@@ -141,7 +142,7 @@ var operateFn = function (_path, dest) {
         fs.readdir(_path, function (err, fileNameArr) {
             "use strict";
             fileNameArr.forEach(function (item, index) {
-                var _pattern = /\.(js|css|jpeg|png|gif)$/,
+                var _pattern = /\.(js|css|jpeg|png|gif|html)$/,
                     _match = item.match(_pattern);
 
                 if(_match && _match[1]) {
@@ -157,12 +158,26 @@ var operateFn = function (_path, dest) {
     }
 };
 
+var getDestPath = function (srcPath) {
+
+    var _pattern = /src(\/\w+\.?\w*)+/g,
+        _srcPath = srcPath.match(_pattern)[0],
+        _pathArr = _srcPath.split('/'),
+        _destFile = [_pathArr[1], _pathArr[2]].join('/');
+
+
+    var destPath = srcPath.replace(_pattern, '') + _destFile;
+
+    return destPath;
+};
+
 
 
 
 var cssMini = getMiniFn('css'),
     jsMini = getMiniFn('js'),
-    imgMini = getMiniFn('img');
+    imgMini = getMiniFn('img'),
+    htmlMini = getMiniFn('html');
 
 
 
@@ -189,7 +204,7 @@ var cssMini = getMiniFn('css'),
                     filename[0],
                     '</div>',
                     '<ul class="btn-box">',
-                    '<li><a href="##" class="uglify-btn">压缩</a></li><li><a href="##" class="complie-btn">编译</a></li><li><a href="##" class="dev-btn">开发</a></li>',
+                    '<li><a href="##" class="uglify-btn">压缩</a></li><li><a href="##" class="md5-btn">MD5</a></li><li><a href="##" class="dev-btn">开发</a></li>',
                     '</ul>',
                     '</li>'
                 ].join('');
@@ -204,44 +219,24 @@ var cssMini = getMiniFn('css'),
         //压缩混淆
         $('.list-container').delegate('.uglify-btn', 'click', function () {
             "use strict";
-            var srcPath = $(this).parent().parent().prev().data('file'),
-                _pattern = /src(\/\w+\.?\w*)+/g;
+            var srcPath = $(this).parent().parent().prev().data('file');
 
-            var _srcPath = srcPath.match(_pattern)[0],
-                _pathArr = _srcPath.split('/'),
-                _destFile = [_pathArr[1], _pathArr[2]].join('/');
-
-
-            var destPath = srcPath.replace(_pattern, '') + _destFile;
-
-            operateFn(srcPath, destPath);
+            operateFn(srcPath, getDestPath(srcPath));
         });
 
-        //postcss complier
-        $('.list-container').delegate('.complie-btn', 'click', function () {
+        //MD5追加版本号
+        $('.list-container').delegate('.md5-btn', 'click', function () {
             "use strict";
-            var path = $(this).parent().parent().prev().data('file');
+            var srcPath = $(this).parent().parent().prev().data('file');
+
+            operateFn(srcPath, getDestPath(srcPath))
         });
 
-        //图片压缩复制
+        //开发 页面无刷新
         $('.list-container').delegate('.dev-btn', 'click', function () {
             var srcPath = $(this).parent().parent().prev().data('file');
 
-
-            browserSync.init({
-                server: {
-                    baseDir: srcPath
-                }
-            });
-
-            gulp.watch([path.resolve(srcPath, 'pages/**/*.html'),
-                path.resolve(srcPath, 'css/**/*.css'),
-                path.resolve(srcPath, 'js/**/*.js')])
-                .on('change', browserSync.reload)
+            watchFn(srcPath);
         });
 
-
-        //watchFn();
-
-        //gulp.run(['watch', 'connect']);
     };
