@@ -259,11 +259,11 @@ var getInfo = function () {
         $('.list-container').delegate('.dev-btn', 'click', function () {
             var srcPath = $(this).parent().parent().prev().data('file');
 
-            var $btn = $(this).button('loading');
+            /*var $btn = $(this).button('loading');
 
             setTimeout(function () {
                 $btn.button('reset');
-            }, 3000);
+            }, 3000);*/
 
             watchFn(srcPath, getInfo.call(this));
         });
