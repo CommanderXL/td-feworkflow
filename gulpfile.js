@@ -8,7 +8,8 @@ var dialog = require('electron').remote.dialog,
     $$ = require('gulp-load-plugins')(),
     path = require('path'),
     browserSync = require('browser-sync').create(),
-    fs = require('fs');
+    fs = require('fs'),
+    del = require('del');
 
 
 
@@ -54,6 +55,28 @@ var getMiniFn = function (flag) {
             default :
                 break;
         }
+
+        //遍历文件夹,删除文件(注意这个地方的异步操作使用闭包来处理)
+        for(var i = 0; i < src.length; i++) {
+            var _srcArr = src[i].replace(/\/src/, '').split('/'),
+                _fileArr = _srcArr[_srcArr.length - 1].split('.');
+            _srcArr.pop();
+            _fileArr.pop();
+            var _destPath = _srcArr.join('/'),
+                _fileName = _fileArr.join('.'),
+                _pattern = new RegExp(_fileName);
+            (function (x) {
+                fs.readdir(_destPath, function (err, destArr) {
+                    destArr.forEach(function (item) {
+                        if(x.test(item)) {
+                            gulp.src(path.resolve(_destPath, item), {read: false})
+                                .pipe($$.clean({force: true}));
+                        }
+                    });
+                });
+            })(_pattern);
+        }
+
 
         if(flag === 'js' || flag === 'css') {
             behavior = (flag === 'js' ? $$.uglify : $$.cleanCss);
@@ -131,7 +154,7 @@ var operateFn = function (_path, dest, info) {
 
         revPath = path.resolve(_path, '../../../rev');
 
-        behavior(_path, dest, revPath, info);
+        behavior([_path], dest, revPath, info);
     } else {
 
         var _pathArr = _path.split('/');

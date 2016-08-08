@@ -18,7 +18,9 @@
   "author": "XRene",
   "license": "ISC",
   "devDependencies": {
-    "electron-packager": "^7.5.1"
+    "del": "^2.2.1",
+    "electron-packager": "^7.5.1",
+    "gulp-clean": "^0.3.2"
   },
   "dependencies": {
     "bootstrap": "^3.3.7",
