@@ -170,12 +170,7 @@ var getDestPath = function (srcPath) {
         _pathArr = _srcPath.split('/'),
         _destFile = [_pathArr[1], _pathArr[2]].join('/');
 
-    console.log(srcPath);
-    console.log(srcPath.replace(_pattern, ''));
-
     var destPath = srcPath.replace(_pattern, '') + _destFile;
-
-    console.log(destPath);
 
     return destPath;
 };
@@ -229,7 +224,7 @@ var init = function () {
                 filename[0],
                 '</div>',
                 '<ul class="btn-box">',
-                '<li><a href="##" class="btn btn-default uglify-btn" data-whatever="压缩完成!" data-target="#myModal" data-toggle="modal" role="button" data-loading-text="压缩中....">压缩</a></li><li><a href="##" class="btn btn-default md5-btn" data-whatever="MD5完成!" data-target="#myModal" data-toggle="modal"  role="button" data-loading-text="MD5ing">MD5</a></li><li><a href="##" class="btn btn-danger dev-btn" data-whatever="启动完成!" data-tips="PC端访问根路径:localhost:3000;\nMoblie访问根路径:192.168.1.101:3000"  data-loading-text="启动ing..." role="button">开发</a></li>',
+                '<li><a href="##" class="btn btn-default uglify-btn" data-whatever="压缩完成!" role="button" data-loading-text="压缩中....">压缩</a></li><li><a href="##" class="btn btn-default md5-btn" data-whatever="MD5完成!"   role="button" data-loading-text="MD5ing">MD5</a></li><li><a href="##" class="btn btn-danger dev-btn" data-whatever="启动完成!" data-tips="PC端访问根路径:localhost:3000;\nMoblie访问根路径:192.168.1.101:3000"  data-loading-text="启动ing..." role="button">开发</a></li>',
                 '</ul>',
                 '</li>'
             ].join('');
