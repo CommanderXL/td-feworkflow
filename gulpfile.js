@@ -165,13 +165,16 @@ var operateFn = function (_path, dest, info) {
 //获取目标文件的路径
 var getDestPath = function (srcPath) {
 
-    var _pattern = /src(\/\w+\.?\w*)+/g,
+    var _pattern = /src(\/\w+(\.|_|-)?\w*\.?\w*)+/g,
         _srcPath = srcPath.match(_pattern)[0],
         _pathArr = _srcPath.split('/'),
         _destFile = [_pathArr[1], _pathArr[2]].join('/');
 
+    console.log(srcPath);
+    console.log(srcPath.replace(_pattern, ''));
 
     var destPath = srcPath.replace(_pattern, '') + _destFile;
+
 
     return destPath;
 };
