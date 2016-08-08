@@ -35,4 +35,4 @@
 3. 点击`MD5`按钮，`app`将会完成manifest.json替换html相对于静态文件的路径，压缩完毕后弹窗提示;
 4. 点击`开发`按钮, 利用`browser-sync`启动本地服务器。默认设置服务器根目录是`src/`,如果要调试具体页面,则输入相对于的html文件的路径,静态资料使用相对路径.
 
-! [] (https://github.com/CommanderXL/td-feworkflow/raw/master/images/ui.png)
+![uiDemo](https://github.com/CommanderXL/td-feworkflow/raw/master/images/ui.png)
