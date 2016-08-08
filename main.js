@@ -16,7 +16,8 @@ function createWin() {
 
     win.loadURL('file://' + __dirname + '/index.html' );
 
-    win.webContents.openDevTools()
+    //避免每次打开程序都打开devTools工具
+    //win.webContents.openDevTools();
 
     win.on('closed', function () {
         win = null;
