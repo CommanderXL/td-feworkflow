@@ -16,16 +16,18 @@
 
 ###文件目录结构
 
-|-----js<br/>
-|-----css<br/>
-|-----images<br/>
-|-----pages<br/>
-|-----src<br/>
-|&nbsp;&nbsp;&nbsp;&nbsp;|----js<br/>
-|&nbsp;&nbsp;&nbsp;&nbsp;|----css<br/>
-|&nbsp;&nbsp;&nbsp;&nbsp;|----images<br/>
-|&nbsp;&nbsp;&nbsp;&nbsp;|----pages<br/>
-|&nbsp;&nbsp;&nbsp;&nbsp;|----rev<br/>
+```javascript
+    |-----js<br/>
+    |-----css<br/>
+    |-----images<br/>
+    |-----pages<br/>
+    |-----src<br/>
+    |&nbsp;&nbsp;&nbsp;&nbsp;|----js<br/>
+    |&nbsp;&nbsp;&nbsp;&nbsp;|----css<br/>
+    |&nbsp;&nbsp;&nbsp;&nbsp;|----images<br/>
+    |&nbsp;&nbsp;&nbsp;&nbsp;|----pages<br/>
+    |&nbsp;&nbsp;&nbsp;&nbsp;|----rev<br/>
+```
 
 ##install
 
