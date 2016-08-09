@@ -90,18 +90,28 @@ var getMiniFn = function (flag) {
                     merge: true
                 }))
                 .pipe(gulp.dest(revPath));
+
+            //modalOperateFn(info);
         } else if(flag === 'html'){
             behavior = $$.revReplace;
 
-            var manifest = gulp.src(path.resolve(revPath, 'manifest.json'));
-            stream.pipe(behavior({manifest: manifest}))
-                .pipe($$.replace())
-                .pipe(gulp.dest(dest));
+            $('#myModal').on('hidden.bs.modal', function () {
+
+                var manifest = gulp.src(path.resolve(revPath, 'manifest.json'));
+                stream.pipe(behavior({manifest: manifest}))
+                    .pipe($$.replace($('#src-path').val(), $('#dest-path').val()))
+                    .pipe(gulp.dest(dest));
+
+                //modalOperateFn(info);
+            });
+
         } else {
             behavior = $$.imagemin;
 
             stream.pipe(behavior())
                 .pipe(gulp.dest(dest));
+
+            //modalOperateFn(info);
         }
 
         modalOperateFn(info);
@@ -204,7 +214,10 @@ var modalOperateFn = function (info) {
     var modal = $('#myModal');
     modal.modal();
     modal.find('.modal-title').text(info.title);
-    modal.find('.modal-body').text(info.tips);
+
+    if(info.title != '请输入替换路径') {
+        modal.find('.modal-body').text(info.tips);
+    }
 };
 
 
@@ -247,7 +260,7 @@ var init = function () {
                 filename[0],
                 '</div>',
                 '<ul class="btn-box">',
-                '<li><a href="##" class="btn btn-default uglify-btn" data-whatever="压缩完成!" role="button" data-loading-text="压缩中....">压缩</a></li><li><a href="##" class="btn btn-default md5-btn" data-whatever="MD5完成!"   role="button" data-loading-text="MD5ing">MD5</a></li><li><a href="##" class="btn btn-danger dev-btn" data-whatever="启动完成!" data-tips="PC端访问根路径:localhost:3000;\nMoblie访问根路径:192.168.1.101:3000"  data-loading-text="启动ing..." role="button">开发</a></li>',
+                '<li><a href="##" class="btn btn-default uglify-btn" data-whatever="压缩完成!" role="button" data-loading-text="压缩中....">压缩</a></li><li><a href="##" class="btn btn-default md5-btn" data-whatever="请输入替换路径"   role="button" data-loading-text="MD5ing">MD5</a></li><li><a href="##" class="btn btn-danger dev-btn" data-whatever="启动完成!" data-tips="PC端访问根路径:localhost:3000;\nMoblie访问根路径:192.168.1.101:3000"  data-loading-text="启动ing..." role="button">开发</a></li>',
                 '</ul>',
                 '</li>'
             ].join('');
