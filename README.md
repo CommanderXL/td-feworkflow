@@ -17,26 +17,26 @@
 ###文件目录结构
 
 ```javascript
-    |-----js<br/>
-    |-----css<br/>
-    |-----images<br/>
-    |-----pages<br/>
-    |-----src<br/>
-    |   |----js<br/>
-    |   |----css<br/>
-    |   |----images<br/>
-    |   |----pages<br/>
-    |   |----rev<br/>
+    |-----js
+    |-----css
+    |-----images
+    |-----pages
+    |-----src
+    |   |----js
+    |   |----css
+    |   |----images
+    |   |----pages
+    |   |----rev
 ```
 
 ##install
 
 ```javascript
 
-    1. git clone  
-    2. npm install
-    3. npm install electron -g
-    4. electron .
+     git clone  
+     npm install
+     npm install electron -g
+     electron .
 
 ```
 
@@ -49,6 +49,8 @@
 `app`将会完成manifest.json替换html相对于静态文件的路径，压缩完毕后弹窗提示;
 4. 点击`开发`按钮, 利用`browser-sync`启动本地服务器。
 默认设置服务器根目录是`src/`,如果要调试具体页面,则输入相对于的html文件的路径,静态资料使用相对路径.
+
+> 清除页面所用操作 `cmd+r`
 
 ---
 
