@@ -22,28 +22,33 @@
     |-----images<br/>
     |-----pages<br/>
     |-----src<br/>
-    |&nbsp;&nbsp;&nbsp;&nbsp;|----js<br/>
-    |&nbsp;&nbsp;&nbsp;&nbsp;|----css<br/>
-    |&nbsp;&nbsp;&nbsp;&nbsp;|----images<br/>
-    |&nbsp;&nbsp;&nbsp;&nbsp;|----pages<br/>
-    |&nbsp;&nbsp;&nbsp;&nbsp;|----rev<br/>
+    |   |----js<br/>
+    |   |----css<br/>
+    |   |----images<br/>
+    |   |----pages<br/>
+    |   |----rev<br/>
 ```
 
 ##install
 
-1. git clone  
-2. npm install
-3. npm install electron -g
-4. electron .
+```javascript
 
+    1. git clone  
+    2. npm install
+    3. npm install electron -g
+    4. electron .
+
+```
 
 ###Howto
 
 1. 点击页面`添加`按钮添加文件， 可以选择文件夹或者具体某一个文件;
 2. 点击`压缩`按钮，`app`将会完成`css`或`js`或`images`的压缩,生成`manifest.json`文件，以及输出到目标文件夹，压缩完毕后弹窗提示.
 `gulp-imageMin`的压缩效果不理想，可以使用**tingpng**提供的API进行压缩;
-3. 点击`MD5`按钮，弹窗显示需要替换的**源路径**和**目标路径**，输入路径后点击`确定`按钮，`app`将会完成manifest.json替换html相对于静态文件的路径，压缩完毕后弹窗提示;
-4. 点击`开发`按钮, 利用`browser-sync`启动本地服务器。默认设置服务器根目录是`src/`,如果要调试具体页面,则输入相对于的html文件的路径,静态资料使用相对路径.
+3. 点击`MD5`按钮，弹窗显示需要替换的**源路径**和**目标路径**，输入路径后点击`确定`按钮，
+`app`将会完成manifest.json替换html相对于静态文件的路径，压缩完毕后弹窗提示;
+4. 点击`开发`按钮, 利用`browser-sync`启动本地服务器。
+默认设置服务器根目录是`src/`,如果要调试具体页面,则输入相对于的html文件的路径,静态资料使用相对路径.
 
 ---
 
