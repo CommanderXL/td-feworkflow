@@ -26,10 +26,10 @@
     |   |----css
     |   |----images
     |   |----pages
-    |   |   |____a-file
-                |____a.html (css/js/images文件目录结构和此对应)
-    |   |   |____b-flie
-                |____b.html
+    |   |   |----a-file
+    |   |         |----a.html (css/js/images文件目录结构和此对应)
+    |   |   |-----b-flie
+    |   |         |-----b.html
     |   |----rev(存放了所有文件的md5值)
 ```
 
