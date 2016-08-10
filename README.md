@@ -21,11 +21,15 @@
     |-----css
     |-----images
     |-----pages
-    |-----src
+    |-----src   (源路径)
     |   |----js
     |   |----css
     |   |----images
     |   |----pages
+    |   |   |____a-file
+                |____a.html (css/js/images文件目录结构和此对应)
+    |   |   |____b-flie
+                |____b.html
     |   |----rev(存放了所有文件的md5值)
 ```
 
