@@ -82,14 +82,20 @@ var getMiniFn = function (flag) {
             behavior = (flag === 'js' ? $$.uglify : $$.cleanCss);
 
 
-            stream.pipe(behavior())
-                .pipe($$.rev())
-                .pipe(gulp.dest(dest))
-                .pipe($$.rev.manifest(path.resolve(revPath, 'manifest.json'), {
-                    base: revPath,
-                    merge: true
-                }))
-                .pipe(gulp.dest(revPath));
+            $('#myModal').on('hidden.bs.modal', function () {
+                stream
+                    .pipe($$.replace(flag === 'js' ? $('.api-src-path').val() : $('.css-src-path').val(), flag === 'js' ? $('.api-dest-path').val() : $('.css-dest-path').val()))
+                    .pipe(behavior())
+                    .pipe($$.rev())
+                    .pipe(gulp.dest(dest))
+                    .pipe($$.rev.manifest(path.resolve(revPath, 'manifest.json'), {
+                        base: revPath,
+                        merge: true
+                    }))
+                    .pipe(gulp.dest(revPath));
+            });
+
+
 
             //modalOperateFn(info);
         } else if(flag === 'html'){
@@ -98,8 +104,12 @@ var getMiniFn = function (flag) {
             $('#myModal').on('hidden.bs.modal', function () {
 
                 var manifest = gulp.src(path.resolve(revPath, 'manifest.json'));
+                    //replaceObj = {};
+
+                //replaceObj["'" + $('.md5-src-path').val() + "'"] = $('.md5-dest-path').val();
+
                 stream.pipe(behavior({manifest: manifest}))
-                    .pipe($$.replace($('#src-path').val(), $('#dest-path').val()))
+                    .pipe($$.replace($('.md5-src-path').val(), $('.md5-dest-path').val()))
                     .pipe(gulp.dest(dest));
 
                 //modalOperateFn(info);
@@ -215,7 +225,16 @@ var modalOperateFn = function (info) {
     modal.modal();
     modal.find('.modal-title').text(info.title);
 
-    if(info.title != '请输入替换路径') {
+
+    if(info.title === '压缩完成') {
+        $('.uglifyForm').show()
+            .find('input').val('');
+        $('.md5Form').hide();
+    } else if(info.title === '请输入替换路径') {
+        $('.md5Form').show()
+            .find('input').val('');
+        $('.uglifyForm').hide();
+    } else {
         modal.find('.modal-body').text(info.tips);
     }
 };
@@ -260,7 +279,7 @@ var init = function () {
                 filename[0],
                 '</div>',
                 '<ul class="btn-box">',
-                '<li><a href="##" class="btn btn-default uglify-btn" data-whatever="压缩完成!" role="button" data-loading-text="压缩中....">压缩</a></li><li><a href="##" class="btn btn-default md5-btn" data-whatever="请输入替换路径"   role="button" data-loading-text="MD5ing">MD5</a></li><li><a href="##" class="btn btn-danger dev-btn" data-whatever="启动完成!" data-tips="PC端访问根路径:localhost:3000;\nMoblie访问根路径:192.168.1.101:3000"  data-loading-text="启动ing..." role="button">开发</a></li>',
+                '<li><a href="##" class="btn btn-default uglify-btn" data-whatever="压缩完成" role="button" data-loading-text="压缩中....">压缩</a></li><li><a href="##" class="btn btn-default md5-btn" data-whatever="请输入替换路径"   role="button" data-loading-text="MD5ing">MD5</a></li><li><a href="##" class="btn btn-danger dev-btn" data-whatever="启动完成!" data-tips="PC端访问根路径:localhost:3000;\nMoblie访问根路径:192.168.1.101:3000"  data-loading-text="启动ing..." role="button">开发</a></li>',
                 '</ul>',
                 '</li>'
             ].join('');
