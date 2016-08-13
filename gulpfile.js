@@ -77,26 +77,19 @@ var getMiniFn = function (flag) {
 
             $('#myModal').on('hidden.bs.modal', function () {
 
-                var manifest = gulp.src(path.resolve(revPath, 'manifest.json'));
-                    //replaceObj = {};
+                var manifest = gulp.src(path.resolve(revPath, 'manifest.json')),
+                    replaceObj = {};
 
-                //replaceObj["'" + $('.md5-src-path').val() + "'"] = $('.md5-dest-path').val();
+                replaceObj[$('.md5-src-path').val()] = $('.md5-dest-path').val();
 
-                //src.unshift(path.resolve(revPath, 'manifest.json'));
+                src.unshift(path.resolve(revPath, 'manifest.json'));
 
-                //console.log(src);
-
-               /* gulp.src(src)
+                gulp.src(src)
                     .pipe($$.revCollector({
                         replaceReved: true,
                         dirReplacements: replaceObj
                     }))
-                    .pipe(gulp.dest(dest));*/
-
-                stream.pipe(behavior({manifest: manifest}))
-                    .pipe($$.replace($('.md5-src-path').val(), $('.md5-dest-path').val()))
                     .pipe(gulp.dest(dest));
-
                 //modalOperateFn(info);
             });
 
