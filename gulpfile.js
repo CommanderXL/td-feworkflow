@@ -26,35 +26,12 @@ var dialogConfig = {
 };
 
 
-function concatCss(src, dest) {
-    "use strict";
-    src = src || '';
-    dest = dest || process.cwd();
-}
-
-
 // js or css mini
 var getMiniFn = function (flag) {
     return function (src, dest, revPath, info) {
         var behavior,
             stream = gulp.src(src),
             cwd = process.cwd();
-
-        switch (flag) {
-            case 'js':
-                behavior = $$.uglify;
-                break;
-            case 'css':
-                behavior = $$.cleanCss;
-                break;
-            case 'img':
-                behavior = $$.imagemin;
-                break;
-            case 'html':
-                behavior = $$.revReplace;
-            default :
-                break;
-        }
 
         //遍历文件夹,删除文件(注意这个地方的异步操作使用闭包来处理)
         for(var i = 0; i < src.length; i++) {
@@ -77,10 +54,8 @@ var getMiniFn = function (flag) {
             })(_pattern);
         }
 
-
         if(flag === 'js' || flag === 'css') {
             behavior = (flag === 'js' ? $$.uglify : $$.cleanCss);
-
 
             $('#myModal').on('hidden.bs.modal', function () {
                 stream
@@ -96,7 +71,6 @@ var getMiniFn = function (flag) {
             });
 
 
-
             //modalOperateFn(info);
         } else if(flag === 'html'){
             behavior = $$.revReplace;
@@ -108,6 +82,17 @@ var getMiniFn = function (flag) {
 
                 //replaceObj["'" + $('.md5-src-path').val() + "'"] = $('.md5-dest-path').val();
 
+                //src.unshift(path.resolve(revPath, 'manifest.json'));
+
+                //console.log(src);
+
+               /* gulp.src(src)
+                    .pipe($$.revCollector({
+                        replaceReved: true,
+                        dirReplacements: replaceObj
+                    }))
+                    .pipe(gulp.dest(dest));*/
+
                 stream.pipe(behavior({manifest: manifest}))
                     .pipe($$.replace($('.md5-src-path').val(), $('.md5-dest-path').val()))
                     .pipe(gulp.dest(dest));
@@ -118,10 +103,7 @@ var getMiniFn = function (flag) {
         } else {
             behavior = $$.imagemin;
 
-            stream.pipe(behavior())
-                .pipe(gulp.dest(dest));
-
-            //modalOperateFn(info);
+            stream.pipe(gulp.dest(dest));
         }
 
         modalOperateFn(info);
@@ -145,77 +127,58 @@ var watchFn = function (srcPath, info) {
     modalOperateFn(info);
 };
 
-
+//文件的操作动作
 var getFileOperation = function (file) {
-    var _arr = file.split('.'),
-        suffix = _arr[_arr.length - 1];
-    if(suffix === 'js') {           //js处理
-        return jsMini;
-    } else if(suffix === 'css') {   //css处理
-        return cssMini;
-    } else if(suffix === 'html'){
-        return htmlMini;             //html文件打版本号
-    } else {
-        return imgMini;              //图片压缩
-    }
+    return getMiniFn(file);
 };
 
 //_path 源文件的路径
 //dest 目标文件的路径
+//info 提示语
 var operateFn = function (_path, dest, info) {
-    var pathArr = _path.split('/'),
-        file = pathArr[pathArr.length - 1],
-        index =  file.indexOf('.'),
-        behavior,
-        revPath;        //版本号路径
 
-    if(index != -1) {
-        behavior = getFileOperation(file);
+    var behavior,   //动作
+        revPath = _path.replace(/src(\/\w+((\.|-|_)\w+)*)+/, '') + 'src/rev'; //版本号文件夹
 
-        revPath = path.resolve(_path, '../../../rev');
+    var extNameRegExp = /^.(html|js|css)$/,
+        matcher = path.extname(_path).match(extNameRegExp);
 
-        behavior([_path], dest, revPath, info);
-    } else {
-
-        var _pathArr = _path.split('/');
-
-        _pathArr.pop();
-
-        revPath = _pathArr.join('/');
-
-        revPath = path.resolve(revPath, '../rev');
-
+    if(matcher == null) {
 
         fs.readdir(_path, function (err, fileNameArr) {
-            "use strict";
             fileNameArr.forEach(function (item, index) {
                 var _pattern = /\.(js|css|jpeg|png|gif|html)$/,
                     _match = item.match(_pattern);
 
                 if(_match && _match[1]) {
-                    return behavior = getFileOperation(item);
+                    return behavior = getFileOperation(_match[1]);
                 }
             });
 
             fileNameArr.forEach(function (item, index) {
                 fileNameArr[index] = _path + '/' + item;
             });
+
             behavior(fileNameArr, dest, revPath, info);
         })
+
+    } else {
+        behavior = getFileOperation(matcher[1]);
+
+        behavior([_path], dest, revPath, info);
     }
+
 };
 
 //获取目标文件的路径
 var getDestPath = function (srcPath) {
 
-    var _pattern = /src(\/\w+((\.|_|-)*\w*)*\.?\w*)+/g,
-        _srcPath = srcPath.match(_pattern)[0],
-        _pathArr = _srcPath.split('/'),
-        _destFile = [_pathArr[1], _pathArr[2]].join('/');
+    var extRegExp = /^.(js|html|css)/,
+        matcher = path.extname(srcPath).match(extRegExp);
 
-    var destPath = srcPath.replace(_pattern, '') + _destFile;
+    var _result =  matcher == null ? srcPath.replace(/\/src/, '') : path.dirname(srcPath).replace(/\/src/, '');
 
-    return destPath;
+    return _result;
 };
 
 //modal控制函数
@@ -239,15 +202,6 @@ var modalOperateFn = function (info) {
     }
 };
 
-
-
-
-var cssMini = getMiniFn('css'),
-    jsMini = getMiniFn('js'),
-    imgMini = getMiniFn('img'),
-    htmlMini = getMiniFn('html');
-
-
 var getInfo = function () {
     var tips = {
         title: $(this).data('whatever') ? $(this).data('whatever') : '',
@@ -270,20 +224,26 @@ var init = function () {
             //取消按钮操作
             if(filename.length === 0) return;
 
-            var html = [
-                '<li class="list-item">',
-                /*'<span class="icon icon-large icon-file-alt"></span>',*/
-                '<div class="file-box" data-file="',
-                filename[0],
-                '">',
-                filename[0],
-                '</div>',
-                '<ul class="btn-box">',
-                '<li><a href="##" class="btn btn-default uglify-btn" data-whatever="压缩完成" role="button" data-loading-text="压缩中....">压缩</a></li><li><a href="##" class="btn btn-default md5-btn" data-whatever="请输入替换路径"   role="button" data-loading-text="MD5ing">MD5</a></li><li><a href="##" class="btn btn-danger dev-btn" data-whatever="启动完成!" data-tips="PC端访问根路径:localhost:3000;\nMoblie访问根路径:192.168.1.101:3000"  data-loading-text="启动ing..." role="button">开发</a></li>',
-                '</ul>',
-                '</li>'
-            ].join('');
+            var html = [],
+                i = 0,
+                len = filename.length;
 
+            for(; i < len; i++) {
+                var _nodeItem = [
+                    '<li class="list-item">',
+                    /*'<span class="icon icon-large icon-file-alt"></span>',*/
+                    '<div class="file-box" data-file="',
+                    filename[i],
+                    '">',
+                    filename[i],
+                    '</div>',
+                    '<ul class="btn-box">',
+                    '<li><a href="##" class="btn btn-default uglify-btn" data-whatever="压缩完成" role="button" data-loading-text="压缩中....">压缩</a></li><li><a href="##" class="btn btn-default md5-btn" data-whatever="请输入替换路径"   role="button" data-loading-text="MD5ing">MD5</a></li><li><a href="##" class="btn btn-danger dev-btn" data-whatever="启动完成!" data-tips="PC端访问根路径:localhost:3000;\nMoblie访问根路径:192.168.1.101:3000"  data-loading-text="启动ing..." role="button">开发</a></li>',
+                    '</ul>',
+                    '</li>'
+                ].join('');
+                html[i] = _nodeItem;
+            }
 
             $('.list-container').append(html);
 
@@ -311,16 +271,10 @@ var init = function () {
     $('.list-container').delegate('.dev-btn', 'click', function () {
         var srcPath = $(this).parent().parent().prev().data('file');
 
-        /*var $btn = $(this).button('loading');
-
-         setTimeout(function () {
-         $btn.button('reset');
-         }, 3000);*/
-
         watchFn(srcPath, getInfo.call(this));
     });
 };
 
-
+//初始化操作
 init();
 
