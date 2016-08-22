@@ -12,8 +12,6 @@ var dialog = require('electron').remote.dialog,
     del = require('del');
 
 
-
-
 var dialogConfig = {
     properties: ['openFile', 'openDirectory', 'multiSelections'],
     filters: [
@@ -57,7 +55,7 @@ var getMiniFn = function (flag) {
         if(flag === 'js' || flag === 'css') {
             behavior = (flag === 'js' ? $$.uglify : $$.cleanCss);
 
-            $('#myModal').on('hidden.bs.modal', function () {
+            $('.btn-confirm').on('click', function () {
                 stream
                     .pipe($$.replace(flag === 'js' ? $('.api-src-path').val() : $('.css-src-path').val(), flag === 'js' ? $('.api-dest-path').val() : $('.css-dest-path').val()))
                     .pipe(behavior())
@@ -82,14 +80,19 @@ var getMiniFn = function (flag) {
 
                 replaceObj[$('.md5-src-path').val()] = $('.md5-dest-path').val();
 
-                src.unshift(path.resolve(revPath, 'manifest.json'));
+                //src.unshift(path.resolve(revPath, 'manifest.json'));
 
                 gulp.src(src)
+                    .pipe($$.revReplace({manifest: manifest}))
+                    .pipe($$.replace($('.md5-src-path').val(), $('.md5-dest-path').val()))
+                    .pipe(gulp.dest(dest));
+
+               /* gulp.src(src)
                     .pipe($$.revCollector({
                         replaceReved: true,
                         dirReplacements: replaceObj
                     }))
-                    .pipe(gulp.dest(dest));
+                    .pipe(gulp.dest(dest));*/
                 //modalOperateFn(info);
             });
 
@@ -215,7 +218,7 @@ var init = function () {
         dialog.showOpenDialog(dialogConfig, function (filename) {
 
             //取消按钮操作
-            if(filename.length === 0) return;
+            if(!filename) return;
 
             var html = [],
                 i = 0,
