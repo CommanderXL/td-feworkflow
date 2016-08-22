@@ -9,19 +9,8 @@ var dialog = require('electron').remote.dialog,
     path = require('path'),
     browserSync = require('browser-sync').create(),
     fs = require('fs'),
-    del = require('del');
-
-
-var dialogConfig = {
-    properties: ['openFile', 'openDirectory', 'multiSelections'],
-    filters: [
-        {name: 'Images', extensions: ['jpg', 'png', 'gif']},
-        {name: 'Html', extensions: ['html', 'php']},
-        {name: 'css', extensions: ['css', 'less', 'sass', 'scss']},
-        {name: 'js', extensions: ['js', 'jsx']},
-        {name: 'All Files', extensions: ['*']}
-    ]
-};
+    del = require('del'),
+    config = require('./config');
 
 
 // js or css mini
@@ -73,27 +62,19 @@ var getMiniFn = function (flag) {
         } else if(flag === 'html'){
             behavior = $$.revReplace;
 
-            $('#myModal').on('hidden.bs.modal', function () {
+            $('.btn-confirm').on('click', function () {
 
                 var manifest = gulp.src(path.resolve(revPath, 'manifest.json')),
                     replaceObj = {};
 
                 replaceObj[$('.md5-src-path').val()] = $('.md5-dest-path').val();
 
-                //src.unshift(path.resolve(revPath, 'manifest.json'));
 
                 gulp.src(src)
                     .pipe($$.revReplace({manifest: manifest}))
                     .pipe($$.replace($('.md5-src-path').val(), $('.md5-dest-path').val()))
                     .pipe(gulp.dest(dest));
 
-               /* gulp.src(src)
-                    .pipe($$.revCollector({
-                        replaceReved: true,
-                        dirReplacements: replaceObj
-                    }))
-                    .pipe(gulp.dest(dest));*/
-                //modalOperateFn(info);
             });
 
         } else {
@@ -215,7 +196,7 @@ var init = function () {
 
     addFileBtn.on('click', function () {
         //唤起native选择框
-        dialog.showOpenDialog(dialogConfig, function (filename) {
+        dialog.showOpenDialog(config.dialogConfig, function (filename) {
 
             //取消按钮操作
             if(!filename) return;
