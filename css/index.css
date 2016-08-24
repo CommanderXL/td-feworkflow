@@ -80,8 +80,8 @@ html, body {
 
 .add-file-btn {
     position: absolute;
-    bottom: 10px;
-    left: 50%;
+    left: 26px;
+    top: 50%;
     margin-left: -17px;
     width: 35px;
     height: 35px;
@@ -99,4 +99,18 @@ html, body {
     height: 20px;
     margin-left: -7px;
     margin-top: -8px;
+}
+
+.log-container {
+    position: absolute;
+    bottom: 0;
+    height: 80px;
+    left: 0;
+    right: 0;
+    border: 1px solid #e3e3e3;
+    overflow-y: auto;
+}
+
+.log-container p {
+    margin: 0;
 }

@@ -10,41 +10,55 @@ var dialog = require('electron').remote.dialog,
     browserSync = require('browser-sync').create(),
     fs = require('fs'),
     del = require('del'),
-    config = require('./config');
+    config = require('./config'),
+    cProcess = require('child_process');
+
+
+var handle;
 
 
 // js or css mini
 var getMiniFn = function (flag) {
     return function (src, dest, revPath, info) {
-        var behavior,
-            stream = gulp.src(src),
-            cwd = process.cwd();
 
-        //遍历文件夹,删除文件(注意这个地方的异步操作使用闭包来处理)
-        for(var i = 0; i < src.length; i++) {
-            var _srcArr = src[i].replace(/\/src/, '').split('/'),
-                _fileArr = _srcArr[_srcArr.length - 1].split('.');
-            _srcArr.pop();
-            _fileArr.pop();
-            var _destPath = _srcArr.join('/'),
-                _fileName = _fileArr.join('.'),
-                _pattern = new RegExp(_fileName);
-            (function (x) {
-                fs.readdir(_destPath, function (err, destArr) {
-                    destArr.forEach(function (item) {
-                        if(x.test(item)) {
-                            gulp.src(path.resolve(_destPath, item), {read: false})
-                                .pipe($$.clean({force: true}));
-                        }
-                    });
-                });
-            })(_pattern);
-        }
+        modalOperateFn(info);
 
-        if(flag === 'js' || flag === 'css') {
-            behavior = (flag === 'js' ? $$.uglify : $$.cleanCss);
+        return function () {
+            var behavior,
+                stream = gulp.src(src),
+                cwd = process.cwd(),
+                cb;
 
-            $('.btn-confirm').on('click', function () {
+            /*function operateHandle() {
+                return function (cb) {*/
+                    //遍历文件夹,删除文件(注意这个地方的异步操作使用闭包来处理)
+                    for(var i = 0; i < src.length; i++) {
+                        var _srcArr = src[i].replace(/\/src/, '').split('/'),
+                            _fileArr = _srcArr[_srcArr.length - 1].split('.');
+                        _srcArr.pop();
+                        _fileArr.pop();
+                        var _destPath = _srcArr.join('/'),
+                            _fileName = _fileArr.join('.'),
+                            _pattern = new RegExp(_fileName);
+                        (function (x) {
+                            fs.readdir(_destPath, function (err, destArr) {
+                                destArr.forEach(function (item) {
+                                    if(x.test(item)) {
+                                        gulp.src(path.resolve(_destPath, item), {read: false})
+                                            .pipe($$.clean({force: true}));
+                                    }
+                                });
+                            });
+                        })(_pattern);
+                    }
+/*
+                    cb && cb();
+                };
+            }*/
+
+
+
+            function CssOrJsHandle() {
                 stream
                     .pipe($$.replace(flag === 'js' ? $('.api-src-path').val() : $('.css-src-path').val(), flag === 'js' ? $('.api-dest-path').val() : $('.css-dest-path').val()))
                     .pipe(behavior())
@@ -54,16 +68,14 @@ var getMiniFn = function (flag) {
                         base: revPath,
                         merge: true
                     }))
-                    .pipe(gulp.dest(revPath));
-            });
+                    .pipe(gulp.dest(revPath))
+                    .on('end', function () {
+                        showLogs(flag === 'js' ? 'js压缩完毕...' : 'css压缩完毕...');
+                    });
+            };
 
 
-            //modalOperateFn(info);
-        } else if(flag === 'html'){
-            behavior = $$.revReplace;
-
-            $('.btn-confirm').on('click', function () {
-
+            function htmlHandle() {
                 var manifest = gulp.src(path.resolve(revPath, 'manifest.json')),
                     replaceObj = {};
 
@@ -73,18 +85,48 @@ var getMiniFn = function (flag) {
                 gulp.src(src)
                     .pipe($$.revReplace({manifest: manifest}))
                     .pipe($$.replace($('.md5-src-path').val(), $('.md5-dest-path').val()))
-                    .pipe(gulp.dest(dest));
+                    .pipe(gulp.dest(dest))
+                    .on('end', function () {
+                        showLogs('html文件文件版本号添加成功');
+                    });
+            }
 
-            });
 
-        } else {
-            behavior = $$.imagemin;
 
-            stream.pipe(gulp.dest(dest));
+            if(flag === 'js' || flag === 'css') {
+                behavior = (flag === 'js' ? $$.uglify : $$.cleanCss);
+
+                cb = CssOrJsHandle;
+
+                //modalOperateFn(info);
+            } else if(flag === 'html'){
+                behavior = $$.revReplace;
+
+                cb = htmlHandle;
+
+
+
+            } else {
+                behavior = $$.imagemin;
+
+                stream.pipe(gulp.dest(dest));
+            }
+
+            cb();
+
+
         }
-
-        modalOperateFn(info);
     }
+};
+
+
+var showLogs = function (str) {
+    var date = new Date(),
+        hours = date.getHours(),
+        minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes(),
+        seconds = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds();
+    str = $('<p>[' + hours + ':' + minutes + ':' + seconds + ']' + str +'</p>');
+    $('.log-container').append(str);
 };
 
 
@@ -136,16 +178,25 @@ var operateFn = function (_path, dest, info) {
                 fileNameArr[index] = _path + '/' + item;
             });
 
-            behavior(fileNameArr, dest, revPath, info);
+
+            handle = behavior(fileNameArr, dest, revPath, info);
         })
 
     } else {
         behavior = getFileOperation(matcher[1]);
 
-        behavior([_path], dest, revPath, info);
-    }
 
+        handle = behavior([_path], dest, revPath, info);
+    }
 };
+
+
+
+$('.btn-confirm').on('click', function () {
+    handle();
+});
+
+
 
 //获取目标文件的路径
 var getDestPath = function (srcPath) {
