@@ -27,30 +27,57 @@ var getMiniFn = function (flag) {
             var behavior,
                 stream = gulp.src(src),
                 cwd = process.cwd(),
-                cb;
+                cb,
+                _base = path.dirname(src[0]);
+
+
+            console.log(_base, dest);
 
             /*function operateHandle() {
                 return function (cb) {*/
-                    //遍历文件夹,删除文件(注意这个地方的异步操作使用闭包来处理)
-                    for(var i = 0; i < src.length; i++) {
-                        var _srcArr = src[i].replace(/\/src/, '').split('/'),
-                            _fileArr = _srcArr[_srcArr.length - 1].split('.');
-                        _srcArr.pop();
-                        _fileArr.pop();
-                        var _destPath = _srcArr.join('/'),
-                            _fileName = _fileArr.join('.'),
-                            _pattern = new RegExp(_fileName);
-                        (function (x) {
-                            fs.readdir(_destPath, function (err, destArr) {
-                                destArr.forEach(function (item) {
-                                    if(x.test(item)) {
-                                        gulp.src(path.resolve(_destPath, item), {read: false})
-                                            .pipe($$.clean({force: true}));
-                                    }
-                                });
-                            });
-                        })(_pattern);
+            if(src.length > 1) {
+                //遍历文件夹,删除文件(注意这个地方的异步操作使用闭包来处理)
+                for(var i = 0; i < src.length; i++) {
+
+                    var _destPath = path.dirname(src[i]).replace(/\/src/, ''),//目标路径
+                        _baseName = path.basename(src[i]),  //文件or文件夹
+                        _fileName;
+
+
+                    if(_baseName.indexOf('.') == -1) {
+                        _fileName = _baseName;
+                    } else {
+                        _fileName = _baseName.split('.')[0];
                     }
+
+                    var _pattern = new RegExp(_fileName);
+
+                    (function (x) {
+                        fs.readdir(_destPath, function (err, destArr) {
+                            destArr.forEach(function (item) {
+                                if(x.test(item)) {
+                                    //这个通过gulp的写法为什么有问题
+                                    cProcess.exec('rm -rf' + path.resolve(_destPath, item));
+                                    /* gulp.src(path.resolve(_destPath, item), {read: false})
+                                     .pipe($$.clean({force: true}));*/
+                                }
+                            });
+                        });
+                    })(_pattern);
+
+                    if(path.extname(src[i]) == '') {
+                        if(flag === 'js') {
+                            src[i] = src[i] + '/**/*.js';
+                        } else if(flag === 'css') {
+                            src[i] = src[i] + '/**/*.css';
+                        }
+                    }
+
+                }
+            }
+
+
+
 /*
                     cb && cb();
                 };
@@ -59,7 +86,8 @@ var getMiniFn = function (flag) {
 
 
             function CssOrJsHandle() {
-                stream
+
+                gulp.src(src, {base: _base})//设备base选项可以设定src代码最后输出的base目录.不过
                     .pipe($$.replace(flag === 'js' ? $('.api-src-path').val() : $('.css-src-path').val(), flag === 'js' ? $('.api-dest-path').val() : $('.css-dest-path').val()))
                     .pipe(behavior())
                     .pipe($$.rev())
@@ -91,8 +119,6 @@ var getMiniFn = function (flag) {
                     });
             }
 
-
-
             if(flag === 'js' || flag === 'css') {
                 behavior = (flag === 'js' ? $$.uglify : $$.cleanCss);
 
@@ -114,7 +140,6 @@ var getMiniFn = function (flag) {
 
             cb();
 
-
         }
     }
 };
@@ -125,7 +150,7 @@ var showLogs = function (str) {
         hours = date.getHours(),
         minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes(),
         seconds = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds();
-    str = $('<p>[' + hours + ':' + minutes + ':' + seconds + ']' + str +'</p>');
+    str = $('<p>[' + hours + ':' + minutes + ':' + seconds + '] ' + str +'</p>');
     $('.log-container').append(str);
 };
 
@@ -141,7 +166,7 @@ var watchFn = function (srcPath, info) {
     gulp.watch([path.resolve(srcPath, 'pages/**/*.html'),
         path.resolve(srcPath, 'css/**/*.css'),
         path.resolve(srcPath, 'js/**/*.js')])
-        .on('change', browserSync.reload)
+        .on('change', browserSync.reload);
 
     modalOperateFn(info);
 };
@@ -191,12 +216,9 @@ var operateFn = function (_path, dest, info) {
 };
 
 
-
 $('.btn-confirm').on('click', function () {
     handle();
 });
-
-
 
 //获取目标文件的路径
 var getDestPath = function (srcPath) {
