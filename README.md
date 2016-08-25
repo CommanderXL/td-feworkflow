@@ -4,16 +4,14 @@
 
 * css压缩,js压缩,路径替换以及打版本号(可选择文件夹或者单/多选文件)
 * image压缩和移位
-* 静态服务器,PC和moblie同时预览(开发阶段使用相对路径)
+* 静态资源伺服服务器,PC和moblie同时预览(开发阶段使用相对路径)
 * html文件的路径替换
 * log
 
 ###Todo:
 
-
 * 代码规范
 * 上传FTP服务器
-* mock数据服务
 
 ###文件目录结构
 
@@ -40,7 +38,7 @@
 
      git clone  
      npm install
-     npm install electron -g
+     npm install electron-prebuilt -g
      electron .
 
 ```

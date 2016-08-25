@@ -13,9 +13,7 @@ var dialog = require('electron').remote.dialog,
     config = require('./config'),
     cProcess = require('child_process');
 
-
 var handle;
-
 
 // js or css mini
 var getMiniFn = function (flag) {
@@ -75,15 +73,6 @@ var getMiniFn = function (flag) {
 
                 }
             }
-
-
-
-/*
-                    cb && cb();
-                };
-            }*/
-
-
 
             function CssOrJsHandle() {
 
