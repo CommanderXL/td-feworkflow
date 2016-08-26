@@ -21,6 +21,7 @@
     "del": "^2.2.1",
     "electron-packager": "^7.5.1",
     "gulp-clean": "^0.3.2",
+    "gulp-concat": "http://registry.npmjs.org/gulp-concat/-/gulp-concat-2.6.0.tgz",
     "gulp-mock-server": "^1.1.2",
     "gulp-replace": "^0.5.4",
     "mockjs": "^1.0.1-beta3",
