@@ -7,11 +7,15 @@ var dialog = require('electron').remote.dialog,
     gulp = require('gulp'),
     $$ = require('gulp-load-plugins')(),
     path = require('path'),
-    browserSync = require('browser-sync').create(),
     fs = require('fs'),
     del = require('del'),
+    //主菜单配置文件
     config = require('./config'),
-    cProcess = require('child_process');
+    cProcess = require('child_process'),
+    //工具函数
+    util = require('./workflow/util')($, gulp, path),
+    //静态服务器,  多端都可以查看(browser)
+    browserSync = require('./workflow/browserSync')($, gulp, path);
 
 var handle;
 
@@ -19,27 +23,22 @@ var handle;
 var getMiniFn = function (flag) {
     return function (src, dest, revPath, info) {
 
-        modalOperateFn(info);
+        util.modalOperateFn(info);
 
         return function () {
             var behavior,
                 stream = gulp.src(src),
-                cwd = process.cwd(),
                 cb,
                 _base = path.dirname(src[0]);
 
-
-            console.log(_base, dest);
-
-            /*function operateHandle() {
-                return function (cb) {*/
             if(src.length > 1) {
                 //遍历文件夹,删除文件(注意这个地方的异步操作使用闭包来处理)
                 for(var i = 0; i < src.length; i++) {
 
                     var _destPath = path.dirname(src[i]).replace(/\/src/, ''),//目标路径
                         _baseName = path.basename(src[i]),  //文件or文件夹
-                        _fileName;
+                        _fileName,
+                        _pattern;
 
 
                     if(_baseName.indexOf('.') == -1) {
@@ -48,7 +47,7 @@ var getMiniFn = function (flag) {
                         _fileName = _baseName.split('.')[0];
                     }
 
-                    var _pattern = new RegExp(_fileName);
+                    _pattern = new RegExp(_fileName);
 
                     (function (x) {
                         fs.readdir(_destPath, function (err, destArr) {
@@ -70,13 +69,12 @@ var getMiniFn = function (flag) {
                             src[i] = src[i] + '/**/*.css';
                         }
                     }
-
                 }
             }
 
             function CssOrJsHandle() {
 
-                gulp.src(src, {base: _base})//设备base选项可以设定src代码最后输出的base目录.不过
+                gulp.src(src, {base: _base})//设备base选项可以设定src代码最后输出的base目录
                     .pipe($$.replace(flag === 'js' ? $('.api-src-path').val() : $('.css-src-path').val(), flag === 'js' ? $('.api-dest-path').val() : $('.css-dest-path').val()))
                     .pipe(behavior())
                     .pipe($$.rev())
@@ -87,10 +85,9 @@ var getMiniFn = function (flag) {
                     }))
                     .pipe(gulp.dest(revPath))
                     .on('end', function () {
-                        showLogs(flag === 'js' ? 'js压缩完毕...' : 'css压缩完毕...');
+                        util.showLogs(flag === 'js' ? 'js压缩完毕...' : 'css压缩完毕...');
                     });
-            };
-
+            }
 
             function htmlHandle() {
                 var manifest = gulp.src(path.resolve(revPath, 'manifest.json')),
@@ -98,13 +95,12 @@ var getMiniFn = function (flag) {
 
                 replaceObj[$('.md5-src-path').val()] = $('.md5-dest-path').val();
 
-
                 gulp.src(src)
                     .pipe($$.revReplace({manifest: manifest}))
                     .pipe($$.replace($('.md5-src-path').val(), $('.md5-dest-path').val()))
                     .pipe(gulp.dest(dest))
                     .on('end', function () {
-                        showLogs('html文件文件版本号添加成功');
+                        util.showLogs('html文件文件版本号添加成功');
                     });
             }
 
@@ -119,8 +115,6 @@ var getMiniFn = function (flag) {
 
                 cb = htmlHandle;
 
-
-
             } else {
                 behavior = $$.imagemin;
 
@@ -134,33 +128,7 @@ var getMiniFn = function (flag) {
 };
 
 
-var showLogs = function (str) {
-    var date = new Date(),
-        hours = date.getHours(),
-        minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes(),
-        seconds = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds();
-    str = $('<p>[' + hours + ':' + minutes + ':' + seconds + '] ' + str +'</p>');
-    $('.log-container').append(str);
-};
-
-
-//静态服务器,  多端都可以查看(browser)
-var watchFn = function (srcPath, info) {
-    browserSync.init({
-        server: {
-            baseDir: srcPath
-        }
-    });
-
-    gulp.watch([path.resolve(srcPath, 'pages/**/*.html'),
-        path.resolve(srcPath, 'css/**/*.css'),
-        path.resolve(srcPath, 'js/**/*.js')])
-        .on('change', browserSync.reload);
-
-    modalOperateFn(info);
-};
-
-//文件的操作动作
+//文件的操作动作  (这个地方的代码重新书写)
 var getFileOperation = function (file) {
     return getMiniFn(file);
 };
@@ -193,12 +161,13 @@ var operateFn = function (_path, dest, info) {
             });
 
 
+            if(!behavior) return alert('请选择正确的工作方式^_^');
+
             handle = behavior(fileNameArr, dest, revPath, info);
         })
 
     } else {
         behavior = getFileOperation(matcher[1]);
-
 
         handle = behavior([_path], dest, revPath, info);
     }
@@ -209,52 +178,10 @@ $('.btn-confirm').on('click', function () {
     handle();
 });
 
-//获取目标文件的路径
-var getDestPath = function (srcPath) {
-
-    var extRegExp = /^.(js|html|css)/,
-        matcher = path.extname(srcPath).match(extRegExp);
-
-    var _result =  matcher == null ? srcPath.replace(/\/src/, '') : path.dirname(srcPath).replace(/\/src/, '');
-
-    return _result;
-};
-
-//modal控制函数
-//info modal需要显示的信息
-var modalOperateFn = function (info) {
-    var modal = $('#myModal');
-    modal.modal();
-    modal.find('.modal-title').text(info.title);
-
-
-    if(info.title === '压缩完成') {
-        $('.uglifyForm').show()
-            .find('input').val('');
-        $('.md5Form').hide();
-    } else if(info.title === '请输入替换路径') {
-        $('.md5Form').show()
-            .find('input').val('');
-        $('.uglifyForm').hide();
-    } else {
-        modal.find('.modal-body').text(info.tips);
-    }
-};
-
-var getInfo = function () {
-    var tips = {
-        title: $(this).data('whatever') ? $(this).data('whatever') : '',
-        tips: $(this).data('tips') ? $(this).data('tips') : ''
-    };
-    return tips;
-};
 
 var init = function () {
-    var fileInput = document.querySelector('input[type=file]'),
-        btn = document.querySelector('button');
-
-    var addFileBtn = $('.add-file-btn');
-
+    var btn = document.querySelector('button'),
+        addFileBtn = $('.add-file-btn');
 
     addFileBtn.on('click', function () {
         //唤起native选择框
@@ -295,7 +222,7 @@ var init = function () {
         "use strict";
         var srcPath = $(this).parent().parent().prev().data('file');
 
-        operateFn(srcPath, getDestPath(srcPath), getInfo.call(this));
+        operateFn(srcPath, util.getDestPath(srcPath), util.getInfo.call(this));
     });
 
     //MD5追加版本号
@@ -303,14 +230,14 @@ var init = function () {
         "use strict";
         var srcPath = $(this).parent().parent().prev().data('file');
 
-        operateFn(srcPath, getDestPath(srcPath), getInfo.call(this));
+        operateFn(srcPath, util.getDestPath(srcPath), util.getInfo.call(this));
     });
 
     //开发 页面无刷新
     $('.list-container').delegate('.dev-btn', 'click', function () {
         var srcPath = $(this).parent().parent().prev().data('file');
 
-        watchFn(srcPath, getInfo.call(this));
+        browserSync.watchFn(srcPath, util.getInfo.call(this));
     });
 };
 
