@@ -15,7 +15,8 @@ var dialog = require('electron').remote.dialog,
     //工具函数
     util = require('./workflow/util')($, gulp, path),
     //静态服务器,  多端都可以查看(browser)
-    browserSync = require('./workflow/browserSync')($, gulp, path);
+    browserSync = require('./workflow/browserSync')($, gulp, path),
+    sftp = require('gulp-sftp');
 
 var handle;
 
@@ -31,9 +32,9 @@ var getMiniFn = function (flag) {
                 cb,
                 _base = path.dirname(src[0]);
 
-            if(src.length > 1) {
+            if (src.length > 1) {
                 //遍历文件夹,删除文件(注意这个地方的异步操作使用闭包来处理)
-                for(var i = 0; i < src.length; i++) {
+                for (var i = 0; i < src.length; i++) {
 
                     var _destPath = path.dirname(src[i]).replace(/\/src/, ''),//目标路径
                         _baseName = path.basename(src[i]),  //文件or文件夹
@@ -41,7 +42,7 @@ var getMiniFn = function (flag) {
                         _pattern;
 
 
-                    if(_baseName.indexOf('.') == -1) {
+                    if (_baseName.indexOf('.') == -1) {
                         _fileName = _baseName;
                     } else {
                         _fileName = _baseName.split('.')[0];
@@ -52,7 +53,7 @@ var getMiniFn = function (flag) {
                     (function (x) {
                         fs.readdir(_destPath, function (err, destArr) {
                             destArr.forEach(function (item) {
-                                if(x.test(item)) {
+                                if (x.test(item)) {
                                     //这个通过gulp的写法为什么有问题
                                     cProcess.exec('rm -rf' + path.resolve(_destPath, item));
                                     /* gulp.src(path.resolve(_destPath, item), {read: false})
@@ -62,10 +63,10 @@ var getMiniFn = function (flag) {
                         });
                     })(_pattern);
 
-                    if(path.extname(src[i]) == '') {
-                        if(flag === 'js') {
+                    if (path.extname(src[i]) == '') {
+                        if (flag === 'js') {
                             src[i] = src[i] + '/**/*.js';
-                        } else if(flag === 'css') {
+                        } else if (flag === 'css') {
                             src[i] = src[i] + '/**/*.css';
                         }
                     }
@@ -74,7 +75,7 @@ var getMiniFn = function (flag) {
 
             function CssOrJsHandle() {
 
-                gulp.src(src, {base: _base})//设备base选项可以设定src代码最后输出的base目录
+                gulp.src(src, { base: _base })//设备base选项可以设定src代码最后输出的base目录
                     .pipe($$.replace(flag === 'js' ? $('.api-src-path').val() : $('.css-src-path').val(), flag === 'js' ? $('.api-dest-path').val() : $('.css-dest-path').val()))
                     .pipe(behavior())
                     .pipe($$.rev())
@@ -96,7 +97,7 @@ var getMiniFn = function (flag) {
                 replaceObj[$('.md5-src-path').val()] = $('.md5-dest-path').val();
 
                 gulp.src(src)
-                    .pipe($$.revReplace({manifest: manifest}))
+                    .pipe($$.revReplace({ manifest: manifest }))
                     .pipe($$.replace($('.md5-src-path').val(), $('.md5-dest-path').val()))
                     .pipe(gulp.dest(dest))
                     .on('end', function () {
@@ -104,13 +105,13 @@ var getMiniFn = function (flag) {
                     });
             }
 
-            if(flag === 'js' || flag === 'css') {
+            if (flag === 'js' || flag === 'css') {
                 behavior = (flag === 'js' ? $$.uglify : $$.cleanCss);
 
                 cb = CssOrJsHandle;
 
                 //modalOperateFn(info);
-            } else if(flag === 'html'){
+            } else if (flag === 'html') {
                 behavior = $$.revReplace;
 
                 cb = htmlHandle;
@@ -144,14 +145,14 @@ var operateFn = function (_path, dest, info) {
     var extNameRegExp = /^.(html|js|css)$/,
         matcher = path.extname(_path).match(extNameRegExp);
 
-    if(matcher == null) {
+    if (matcher == null) {
 
         fs.readdir(_path, function (err, fileNameArr) {
             fileNameArr.forEach(function (item, index) {
                 var _pattern = /\.(js|css|jpeg|png|gif|html)$/,
                     _match = item.match(_pattern);
 
-                if(_match && _match[1]) {
+                if (_match && _match[1]) {
                     return behavior = getFileOperation(_match[1]);
                 }
             });
@@ -161,7 +162,7 @@ var operateFn = function (_path, dest, info) {
             });
 
 
-            if(!behavior) return alert('请选择正确的工作方式^_^');
+            if (!behavior) return alert('请选择正确的工作方式^_^');
 
             handle = behavior(fileNameArr, dest, revPath, info);
         })
@@ -175,7 +176,7 @@ var operateFn = function (_path, dest, info) {
 
 
 $('.btn-confirm').on('click', function () {
-    handle();
+    typeof handle === 'function' && handle();
 });
 
 
@@ -188,13 +189,13 @@ var init = function () {
         dialog.showOpenDialog(config.dialogConfig, function (filename) {
 
             //取消按钮操作
-            if(!filename) return;
+            if (!filename) return;
 
             var html = [],
                 i = 0,
                 len = filename.length;
 
-            for(; i < len; i++) {
+            for (; i < len; i++) {
                 var _nodeItem = [
                     '<li class="list-item">',
                     /*'<span class="icon icon-large icon-file-alt"></span>',*/
@@ -238,6 +239,33 @@ var init = function () {
         var srcPath = $(this).parent().parent().prev().data('file');
 
         browserSync.watchFn(srcPath, util.getInfo.call(this));
+    });
+
+    $('.config-btn').click(function () {
+        util.modalOperateFn({
+            title: '请输入部署信息',
+            tips: '部署'
+        });
+
+        handle = function () {
+            util.setLocItem('serverConfig', {
+                host: $('.host-path').val(),
+                user: $('.user-name').val(),
+                pass: $('.user-password').val(),
+                port: $('.host-port').val(),
+                remotePath: $('.remote-path').val()
+            });
+
+
+            gulp.src('/Users/didi/demo/gulp/test/src/js/**')
+                .pipe($$.sftp({
+                    host: $('.host-path').val(),
+                    user: $('.user-name').val(),
+                    pass: $('.user-password').val(),
+                    port: $('.host-port').val(),
+                    remotePath: $('.remote-path').val()
+                }))
+        }
     });
 };
 

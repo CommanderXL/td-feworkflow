@@ -5,6 +5,7 @@
 var electron = require('electron');
 var Menu = electron.Menu;
 var app = electron.app;
+var ipcMain = electron.ipcMain;
 var browserWindow = electron.BrowserWindow;
 
 
@@ -15,6 +16,7 @@ function createWin() {
     win = new browserWindow({width: 1000, height: 600});
 
     win.loadURL('file://' + __dirname + '/index.html' );
+    //console.log(win.webContents.getURL());
 
     //避免每次打开程序都打开devTools工具
     //win.webContents.openDevTools();

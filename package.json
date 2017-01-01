@@ -22,8 +22,10 @@
     "electron-packager": "^7.5.1",
     "gulp-clean": "^0.3.2",
     "gulp-concat": "http://registry.npmjs.org/gulp-concat/-/gulp-concat-2.6.0.tgz",
+    "gulp-less": "^3.3.0",
     "gulp-mock-server": "^1.1.2",
     "gulp-replace": "^0.5.4",
+    "gulp-sftp": "^0.1.5",
     "mockjs": "^1.0.1-beta3",
     "webpack": "^1.13.2"
   },
