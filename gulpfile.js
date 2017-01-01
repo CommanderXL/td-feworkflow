@@ -256,6 +256,8 @@ var init = function () {
                 remotePath: $('.remote-path').val()
             });
 
+            util.showLogs('上传文件中ing.........');
+
 
             gulp.src('/Users/didi/demo/gulp/test/src/js/**')
                 .pipe($$.sftp({
@@ -263,7 +265,10 @@ var init = function () {
                     user: $('.user-name').val(),
                     pass: $('.user-password').val(),
                     port: $('.host-port').val(),
-                    remotePath: $('.remote-path').val()
+                    remotePath: $('.remote-path').val(),
+                    callback: function() {
+                        util.showLogs('文件上传成功.....');
+                    }
                 }))
         }
     });
