@@ -247,8 +247,12 @@ var init = function () {
                 gulp.src(srcPath + '/src/css/**/*.less')
                     .pipe($$.less())
                     .pipe(gulp.dest(srcPath + '/css'))
+                    .on('end', function() {
+                        util.showLogs('less编译完成');
+                    });
             });
         }
+        //TODO 添加停止编译的功能
     });
 
     //服务器部署
