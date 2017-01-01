@@ -15,8 +15,7 @@ var dialog = require('electron').remote.dialog,
     //工具函数
     util = require('./workflow/util')($, gulp, path),
     //静态服务器,  多端都可以查看(browser)
-    browserSync = require('./workflow/browserSync')($, gulp, path),
-    sftp = require('gulp-sftp');
+    browserSync = require('./workflow/browserSync')($, gulp, path);
 
 var handle;
 
@@ -238,9 +237,21 @@ var init = function () {
     $('.list-container').delegate('.dev-btn', 'click', function () {
         var srcPath = $(this).parent().parent().prev().data('file');
 
+        //开启browserSync服务
         browserSync.watchFn(srcPath, util.getInfo.call(this));
+
+        handle = function () {
+            //开启less或者sass编译服务
+            var gulpWatcher = gulp.watch(srcPath + '/src/css/**/*.less');
+            gulpWatcher.on('change', function () {
+                gulp.src(srcPath + '/src/css/**/*.less')
+                    .pipe($$.less())
+                    .pipe(gulp.dest(srcPath + '/css'))
+            });
+        }
     });
 
+    //服务器部署
     $('.config-btn').click(function () {
         util.modalOperateFn({
             title: '请输入部署信息',
@@ -258,7 +269,6 @@ var init = function () {
 
             util.showLogs('上传文件中ing.........');
 
-
             gulp.src('/Users/didi/demo/gulp/test/src/js/**')
                 .pipe($$.sftp({
                     host: $('.host-path').val(),
@@ -266,7 +276,7 @@ var init = function () {
                     pass: $('.user-password').val(),
                     port: $('.host-port').val(),
                     remotePath: $('.remote-path').val(),
-                    callback: function() {
+                    callback: function () {
                         util.showLogs('文件上传成功.....');
                     }
                 }))
