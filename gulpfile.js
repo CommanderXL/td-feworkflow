@@ -284,6 +284,9 @@ var init = function () {
                         util.showLogs('文件上传成功.....');
                     }
                 }))
+                .on('error', function() {
+                    util.showLogs('好像出错了?...');
+                })
         }
     });
 };

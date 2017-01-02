@@ -44,11 +44,13 @@ module.exports = function ($, gulp, path) {
                     .find('input').val('');
                 $('.md5Form').hide();
                 $('.sftpForm').hide();
+                $('.modal-tips').hide();
             } else if (title === '请输入替换路径') {
                 $('.md5Form').show()
                     .find('input').val('');
                 $('.uglifyForm').hide();
                 $('.sftpForm').hide();
+                $('.modal-tips').hide();
             } else if (title === '请输入部署信息') {
                 let serverConfig = JSON.parse(this.getLocItem('serverConfig'));
                 $('.host-path').val(serverConfig.host || '');
@@ -57,11 +59,19 @@ module.exports = function ($, gulp, path) {
                 $('.user-name').val(serverConfig.user || '');
                 $('.user-password').val(serverConfig.pass || '');
 
+
                 $('.sftpForm').show();
                 $('.md5Form').hide();
                 $('.uglifyForm').hide();
+                $('.modal-tips').hide();
             } else {
-                modal.find('.modal-body').text(info.tips);
+                $('.md5Form').hide();
+                $('.uglifyForm').hide();
+                $('.sftpForm').hide();
+                $('.modal-tips')
+                    .show()
+                    .text(info.tips);
+                //modal.find('.modal-body').text(info.tips);
             }
         },
         setLocItem(key, value) {
