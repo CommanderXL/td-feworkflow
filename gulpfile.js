@@ -192,26 +192,32 @@ var init = function () {
 
             var html = [],
                 i = 0,
-                len = filename.length;
+                len = filename.length,
+                li = document.createElement('li');
 
-            for (; i < len; i++) {
-                var _nodeItem = [
-                    '<li class="list-item">',
-                    /*'<span class="icon icon-large icon-file-alt"></span>',*/
-                    '<div class="file-box" data-file="',
-                    filename[i],
-                    '">',
-                    filename[i],
-                    '</div>',
-                    '<ul class="btn-box">',
-                    '<li><a href="##" class="btn btn-default uglify-btn" data-whatever="压缩完成" role="button" data-loading-text="压缩中....">压缩</a></li><li><a href="##" class="btn btn-default md5-btn" data-whatever="请输入替换路径"   role="button" data-loading-text="MD5ing">MD5</a></li><li><a href="##" class="btn btn-danger dev-btn" data-whatever="启动完成!" data-tips="PC端访问根路径:localhost:3000;\nMoblie访问根路径:192.168.1.101:3000"  data-loading-text="启动ing..." role="button">开发</a></li>',
-                    '</ul>',
-                    '</li>'
-                ].join('');
-                html[i] = _nodeItem;
+            li.className = 'list-item';
+
+            li.innerHTML = [
+                '<div class="file-box" data-name="" data-file="',
+                filename[i],
+                '">',
+                filename[i],
+                '</div>',
+                '<ul class="btn-box">',
+                '<li><a href="##" class="btn btn-success compile-btn" data-whatever="编译完成" role="button" data-loading-text="编译中....">编译</a></li><li><a href="##" class="btn btn-default uglify-btn" data-whatever="压缩完成" role="button" data-loading-text="压缩中....">压缩</a></li><li><a href="##" class="btn btn-default md5-btn" data-whatever="请输入替换路径"   role="button" data-loading-text="MD5ing">MD5</a></li><li><a href="##" class="btn btn-danger dev-btn" data-whatever="启动完成!" data-tips="PC端访问根路径:localhost:3000;\nMoblie访问根路径:192.168.1.101:3000"  data-loading-text="启动ing..." role="button">开发</a></li>',
+                '</ul>',
+            ].join('');
+
+            $('.list-container').append(li);
+
+            util.modalOperateFn({
+                title: '请输入项目名称'
+            });
+
+            handle = function () {
+                $(li).find('.file-box')
+                    .data('name', $('.item-name').val())
             }
-
-            $('.list-container').append(html);
 
         });
     });
@@ -233,6 +239,14 @@ var init = function () {
         operateFn(srcPath, util.getDestPath(srcPath), util.getInfo.call(this));
     });
 
+    //编译(压缩及追加版本号)
+    $('.list-container').delegate('.compile-btn', 'click', function() {
+        var prevNode = $(this).parent().parent().prev();
+        var basePath = prevNode.data('file');
+        var itemName = prevNode.data('name');
+
+    });
+
     //开发 页面无刷新
     $('.list-container').delegate('.dev-btn', 'click', function () {
         var srcPath = $(this).parent().parent().prev().data('file');
@@ -242,12 +256,13 @@ var init = function () {
 
         handle = function () {
             //开启less或者sass编译服务
-            var gulpWatcher = gulp.watch(srcPath + '/src/css/**/*.less');
+            var srcLess = path.resolve(srcPath, '/src/less/**/*.less');
+            var gulpWatcher = gulp.watch(srcLess);
             gulpWatcher.on('change', function () {
-                gulp.src(srcPath + '/src/css/**/*.less')
+                gulp.src(srcLess)
                     .pipe($$.less())
-                    .pipe(gulp.dest(srcPath + '/css'))
-                    .on('end', function() {
+                    .pipe(gulp.dest(srcPath + '/src/css'))
+                    .on('end', function () {
                         util.showLogs('less编译完成');
                     });
             });
@@ -284,7 +299,7 @@ var init = function () {
                         util.showLogs('文件上传成功.....');
                     }
                 }))
-                .on('error', function() {
+                .on('error', function () {
                     util.showLogs('好像出错了?...');
                 })
         }

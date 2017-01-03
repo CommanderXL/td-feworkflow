@@ -45,12 +45,14 @@ module.exports = function ($, gulp, path) {
                 $('.md5Form').hide();
                 $('.sftpForm').hide();
                 $('.modal-tips').hide();
+                $('.itemForm').hide();
             } else if (title === '请输入替换路径') {
                 $('.md5Form').show()
                     .find('input').val('');
                 $('.uglifyForm').hide();
                 $('.sftpForm').hide();
                 $('.modal-tips').hide();
+                $('.itemForm').hide();
             } else if (title === '请输入部署信息') {
                 let serverConfig = JSON.parse(this.getLocItem('serverConfig'));
                 $('.host-path').val(serverConfig.host || '');
@@ -64,10 +66,19 @@ module.exports = function ($, gulp, path) {
                 $('.md5Form').hide();
                 $('.uglifyForm').hide();
                 $('.modal-tips').hide();
+                $('.itemForm').hide();
+            } else if (title === '请输入项目名称') {
+                $('.sftpForm').hide();
+                $('.md5Form').hide();
+                $('.uglifyForm').hide();
+                $('.modal-tips').hide();
+
+                $('.itemForm').show();
             } else {
                 $('.md5Form').hide();
                 $('.uglifyForm').hide();
                 $('.sftpForm').hide();
+                $('.itemForm').hide();
                 $('.modal-tips')
                     .show()
                     .text(info.tips);

@@ -26,6 +26,7 @@
     "gulp-mock-server": "^1.1.2",
     "gulp-replace": "^0.5.4",
     "gulp-sftp": "^0.1.5",
+    "gulp-sourcemaps": "^1.9.1",
     "mockjs": "^1.0.1-beta3",
     "webpack": "^1.13.2"
   },
