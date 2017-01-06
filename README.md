@@ -8,11 +8,12 @@
 * html文件的路径替换
 * log
 * SFTP上传文件
+* less编译
 
 ###odo:
 
 * 代码规范
-* less,sass编译
+* sass编译
 
 ###文件目录结构
 
