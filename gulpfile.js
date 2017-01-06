@@ -17,13 +17,13 @@ var dialog = require('electron').remote.dialog,
     //静态服务器,  多端都可以查看(browser)
     browserSync = require('./workflow/browserSync')($, gulp, path);
 
-var handle;
+var handle = [];
 
 // js or css mini
 var getMiniFn = function (flag) {
     return function (src, dest, revPath, info) {
 
-        util.modalOperateFn(info);
+        //util.modalOperateFn({title: "编译"});
 
         return function () {
             var behavior,
@@ -145,7 +145,6 @@ var operateFn = function (_path, dest, info) {
         matcher = path.extname(_path).match(extNameRegExp);
 
     if (matcher == null) {
-
         fs.readdir(_path, function (err, fileNameArr) {
             fileNameArr.forEach(function (item, index) {
                 var _pattern = /\.(js|css|jpeg|png|gif|html)$/,
@@ -163,19 +162,24 @@ var operateFn = function (_path, dest, info) {
 
             if (!behavior) return alert('请选择正确的工作方式^_^');
 
-            handle = behavior(fileNameArr, dest, revPath, info);
+            handle.push(behavior(fileNameArr, dest, revPath, info));
         })
 
     } else {
         behavior = getFileOperation(matcher[1]);
 
-        handle = behavior([_path], dest, revPath, info);
+        handle.push(behavior([_path], dest, revPath, info));
     }
 };
 
 
+//点击确认触发按钮操作
 $('.btn-confirm').on('click', function () {
-    typeof handle === 'function' && handle();
+    for (var i = 0; i < handle.length; i++) {
+        typeof handle[i] === 'function' && handle[i]();
+    }
+
+    handle = [];
 });
 
 
@@ -204,7 +208,7 @@ var init = function () {
                 filename[i],
                 '</div>',
                 '<ul class="btn-box">',
-                '<li><a href="##" class="btn btn-success compile-btn" data-whatever="编译完成" role="button" data-loading-text="编译中....">编译</a></li><li><a href="##" class="btn btn-default uglify-btn" data-whatever="压缩完成" role="button" data-loading-text="压缩中....">压缩</a></li><li><a href="##" class="btn btn-default md5-btn" data-whatever="请输入替换路径"   role="button" data-loading-text="MD5ing">MD5</a></li><li><a href="##" class="btn btn-danger dev-btn" data-whatever="启动完成!" data-tips="PC端访问根路径:localhost:3000;\nMoblie访问根路径:192.168.1.101:3000"  data-loading-text="启动ing..." role="button">开发</a></li>',
+                '<li><a href="##" class="btn btn-success compile-btn" data-whatever="编译完成" role="button" data-loading-text="编译中....">编译</a></li><li><a href="##" class="btn btn-danger dev-btn" data-whatever="启动完成!" data-tips="PC端访问根路径:localhost:3000;\nMoblie访问根路径:192.168.1.101:3000"  data-loading-text="启动ing..." role="button">开发</a></li>',
                 '</ul>',
             ].join('');
 
@@ -214,10 +218,11 @@ var init = function () {
                 title: '请输入项目名称'
             });
 
-            handle = function () {
+            //设置项目名称
+            handle.push(function () {
                 $(li).find('.file-box')
-                    .data('name', $('.item-name').val())
-            }
+                    .attr('data-name', $('.item-name').val());
+            });
 
         });
     });
@@ -240,11 +245,23 @@ var init = function () {
     });
 
     //编译(压缩及追加版本号)
-    $('.list-container').delegate('.compile-btn', 'click', function() {
+    $('.list-container').delegate('.compile-btn', 'click', function () {
         var prevNode = $(this).parent().parent().prev();
         var basePath = prevNode.data('file');
         var itemName = prevNode.data('name');
 
+        var srcCssPath = path.resolve(basePath, 'src/css/' + itemName);
+        var srcJsPath = path.resolve(basePath, 'src/js/' + itemName);
+        var srcHtmlPath = path.resolve(basePath, 'src/pages/' + itemName);
+
+        util.modalOperateFn({ title: '编译' });
+
+        //css打包压缩
+        operateFn(srcCssPath, util.getDestPath(srcCssPath));
+        //js打包压缩
+        operateFn(srcJsPath, util.getDestPath(srcJsPath));
+        //html打版本号
+        operateFn(srcHtmlPath, util.getDestPath(srcHtmlPath));
     });
 
     //开发 页面无刷新
@@ -254,7 +271,7 @@ var init = function () {
         //开启browserSync服务
         browserSync.watchFn(srcPath, util.getInfo.call(this));
 
-        handle = function () {
+        handle.push(function () {
             //开启less或者sass编译服务
             var srcLess = path.resolve(srcPath, '/src/less/**/*.less');
             var gulpWatcher = gulp.watch(srcLess);
@@ -266,7 +283,9 @@ var init = function () {
                         util.showLogs('less编译完成');
                     });
             });
-        }
+
+
+        });
         //TODO 添加停止编译的功能
     });
 
@@ -277,7 +296,7 @@ var init = function () {
             tips: '部署'
         });
 
-        handle = function () {
+        handle.push(function () {
             util.setLocItem('serverConfig', {
                 host: $('.host-path').val(),
                 user: $('.user-name').val(),
@@ -302,7 +321,7 @@ var init = function () {
                 .on('error', function () {
                     util.showLogs('好像出错了?...');
                 })
-        }
+        });
     });
 };
 

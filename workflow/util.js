@@ -72,8 +72,11 @@ module.exports = function ($, gulp, path) {
                 $('.md5Form').hide();
                 $('.uglifyForm').hide();
                 $('.modal-tips').hide();
+                $('.compileForm').hide();
 
                 $('.itemForm').show();
+            } else if(title === '编译') {
+                
             } else {
                 $('.md5Form').hide();
                 $('.uglifyForm').hide();
