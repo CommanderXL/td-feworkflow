@@ -39,21 +39,7 @@ module.exports = function ($, gulp, path) {
             modal.find('.modal-title').text(info.title);
 
 
-            if (title === '压缩完成') {
-                $('.uglifyForm').show()
-                    .find('input').val('');
-                $('.md5Form').hide();
-                $('.sftpForm').hide();
-                $('.modal-tips').hide();
-                $('.itemForm').hide();
-            } else if (title === '请输入替换路径') {
-                $('.md5Form').show()
-                    .find('input').val('');
-                $('.uglifyForm').hide();
-                $('.sftpForm').hide();
-                $('.modal-tips').hide();
-                $('.itemForm').hide();
-            } else if (title === '请输入部署信息') {
+            if (title === '请输入部署信息') {
                 let serverConfig = JSON.parse(this.getLocItem('serverConfig'));
                 $('.host-path').val(serverConfig.host || '');
                 $('.remote-path').val(serverConfig.remotePath || '');
@@ -62,26 +48,25 @@ module.exports = function ($, gulp, path) {
                 $('.user-password').val(serverConfig.pass || '');
 
 
-                $('.sftpForm').show();
-                $('.md5Form').hide();
-                $('.uglifyForm').hide();
                 $('.modal-tips').hide();
                 $('.itemForm').hide();
+                $('.compileForm').hide();
+                $('.sftpForm').show();
             } else if (title === '请输入项目名称') {
                 $('.sftpForm').hide();
-                $('.md5Form').hide();
-                $('.uglifyForm').hide();
                 $('.modal-tips').hide();
                 $('.compileForm').hide();
 
                 $('.itemForm').show();
             } else if(title === '编译') {
-                
-            } else {
-                $('.md5Form').hide();
-                $('.uglifyForm').hide();
+                $('.modal-tips').hide();
                 $('.sftpForm').hide();
                 $('.itemForm').hide();
+                $('.compileForm').show();
+            } else {
+                $('.sftpForm').hide();
+                $('.itemForm').hide();
+                $('.compileForm').hide();
                 $('.modal-tips')
                     .show()
                     .text(info.tips);

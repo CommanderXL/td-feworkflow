@@ -227,23 +227,6 @@ var init = function () {
         });
     });
 
-
-    //压缩混淆
-    $('.list-container').delegate('.uglify-btn', 'click', function () {
-        "use strict";
-        var srcPath = $(this).parent().parent().prev().data('file');
-
-        operateFn(srcPath, util.getDestPath(srcPath), util.getInfo.call(this));
-    });
-
-    //MD5追加版本号
-    $('.list-container').delegate('.md5-btn', 'click', function () {
-        "use strict";
-        var srcPath = $(this).parent().parent().prev().data('file');
-
-        operateFn(srcPath, util.getDestPath(srcPath), util.getInfo.call(this));
-    });
-
     //编译(压缩及追加版本号)
     $('.list-container').delegate('.compile-btn', 'click', function () {
         var prevNode = $(this).parent().parent().prev();
