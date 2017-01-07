@@ -100,7 +100,7 @@ var getMiniFn = function (flag) {
                     .pipe($$.replace($('.md5-src-path').val(), $('.md5-dest-path').val()))
                     .pipe(gulp.dest(dest))
                     .on('end', function () {
-                        util.showLogs('html文件文件版本号添加成功');
+                        util.showLogs('html文件文件版本号添加成功...');
                     });
             }
 
@@ -208,7 +208,7 @@ var init = function () {
                 filename[i],
                 '</div>',
                 '<ul class="btn-box">',
-                '<li><a href="##" class="btn btn-success compile-btn" data-whatever="编译完成" role="button" data-loading-text="编译中....">编译</a></li><li><a href="##" class="btn btn-danger dev-btn" data-whatever="启动完成!" data-tips="PC端访问根路径:localhost:3000;\nMoblie访问根路径:192.168.1.101:3000"  data-loading-text="启动ing..." role="button">开发</a></li>',
+                '<li><a href="##" class="btn btn-success compile-btn" data-whatever="编译完成" role="button" data-loading-text="编译中....">编译</a></li><li><a href="##" class="btn btn-danger dev-btn" data-whatever="启动完成!" data-tips="PC端访问根路径:localhost:3000;\nMoblie访问根路径:192.168.1.101:3000"  data-loading-text="启动ing..." role="button">开发</a></li><li><a href="##" class="btn btn-info upload-btn" role="button">上传</a></li>',
                 '</ul>',
             ].join('');
 
@@ -272,6 +272,66 @@ var init = function () {
         //TODO 添加停止编译的功能
     });
 
+    $('.list-container').delegate('.upload-btn', 'click', function () {
+        var itemInfo = getItemNode($(this));
+        //配置文件路径
+        var configFilePath = path.resolve(itemInfo.basePath, 'src/pages/' + itemInfo.itemName + '/workflow1.config.json');
+        //判断是否存在项目的配置文件
+        fs.exists(configFilePath, function (flag) {
+            if (flag) {
+                gulp.src(configFilePath)
+                    .pipe($$.jsonEditor(function (json) {
+                        let cfg = Object.assign(json.sftp),
+                            type = json.type;
+
+                        util.showLogs('上传文件中ing....');
+
+                        //上传成功回调
+                        cfg.callback = function () {
+                            util.showLogs('文件上传成功');
+                        };
+
+                        //判断上传文件类型
+                        for (var key in type) {
+                            var v = type[key];
+
+                            if (v) {
+                                var filePath = path.resolve(itemInfo.basePath, key + '/' + itemName);
+
+                                gulp.src(filePath)
+                                    .pipe($$.sftp(cfg))
+                                    .on('error', function () {
+                                        util.showLogs('好像出错了喔...');
+                                    })
+                            }
+                        }
+                        return json;
+                    }))
+            } else {
+                //写入文件
+                fs.writeFile(configFilePath, JSON.stringify({
+                    "sftp": {
+                        "host": "",
+                        "user": "",
+                        "pass": "",
+                        "port": "",
+                        "remotePath": ""
+                    },
+                    "type": {
+                        "js": false,
+                        "css": false,
+                        "html": false,
+                        "images": false
+                    }
+                }), function (e) {
+                    if(!e) {
+                        util.showLogs('新建上传配置文件成功...');
+                    }
+                })
+            }
+        });
+    });
+
     //服务器部署
     $('.config-btn').click(function () {
         util.modalOperateFn({
@@ -306,6 +366,26 @@ var init = function () {
                 })
         });
     });
+
+    /*$('.upload-btn').click(function () {
+        var itemInfo = getItemNode($(this));
+        //配置文件路径
+        var configFile = path.join(itemInfo.basePath, itemInfo.itemName, 'feWorkFlow.config.json');
+
+        //判断是否存在项目的配置文件
+        fs.exists(configFilePath, function (err, stat) {
+            console.log(stat);
+        });
+    });*/
+
+    function getItemNode(node) {
+        var prevNode = node.parent().parent().prev();
+        return {
+            prevNode: prevNode,
+            basePath: prevNode.data('file'),
+            itemName: prevNode.data('name')
+        }
+    }
 };
 
 //初始化操作

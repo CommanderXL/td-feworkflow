@@ -22,6 +22,7 @@
     "electron-packager": "^7.5.1",
     "gulp-clean": "^0.3.2",
     "gulp-concat": "http://registry.npmjs.org/gulp-concat/-/gulp-concat-2.6.0.tgz",
+    "gulp-json-editor": "^2.2.1",
     "gulp-less": "^3.3.0",
     "gulp-mock-server": "^1.1.2",
     "gulp-replace": "^0.5.4",
