@@ -118,7 +118,9 @@ var getMiniFn = function (flag) {
                     .pipe(gulp.dest(dest))
                     .on('end', function() {
                         util.showLogs('图片文件复制成功...');
-                    })
+                    });
+
+                cb = function() {};
             }
 
             cb();
@@ -147,7 +149,7 @@ var operateFn = function (_path, dest, info) {
     if (matcher == null) {
         fs.readdir(_path, function (err, fileNameArr) {
             fileNameArr.forEach(function (item, index) {
-                var _pattern = /\.(js|css|jpeg|png|gif|html)$/,
+                var _pattern = /\.(js|jpg|css|jpeg|png|gif|html)$/,
                     _match = item.match(_pattern);
 
                 if (_match && _match[1]) {
@@ -262,10 +264,10 @@ var init = function () {
         operateFn(srcCssPath, util.getDestPath(srcCssPath));
         //js打包压缩
         operateFn(srcJsPath, util.getDestPath(srcJsPath));
-        //html打版本号
-        operateFn(srcHtmlPath, util.getDestPath(srcHtmlPath));
         //图片文件
         operateFn(srcImagePath, util.getDestPath(srcImagePath));
+        //html打版本号
+        operateFn(srcHtmlPath, util.getDestPath(srcHtmlPath));
         //事件触发
         setTimeout(function() {
             handleBootstrap();

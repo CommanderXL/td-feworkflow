@@ -1,3 +1,5 @@
 Bugs:
     ☐ 更改构建动作的触发时机
     ☐ 修复modal各种回调的触发时机
+    ☐ 完善上传文件功能
+    ☐ 添加gulp-autoprefixerchajian
