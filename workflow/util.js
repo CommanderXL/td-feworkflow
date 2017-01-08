@@ -1,9 +1,6 @@
 /**
  * Created by XRene on 16/8/26.
  */
-
-
-
 module.exports = function ($, gulp, path) {
     return {
         //获取提示信息
@@ -39,7 +36,7 @@ module.exports = function ($, gulp, path) {
             modal.find('.modal-title').text(info.title);
 
 
-            if (title === '请输入部署信息') {
+            if (title === '请输入配置信息') {
                 let serverConfig = JSON.parse(this.getLocItem('serverConfig'));
                 $('.host-path').val(serverConfig.host || '');
                 $('.remote-path').val(serverConfig.remotePath || '');
@@ -50,7 +47,7 @@ module.exports = function ($, gulp, path) {
 
                 $('.modal-tips').hide();
                 $('.itemForm').hide();
-                $('.compileForm').hide();
+                $('.compileForm').show();
                 $('.sftpForm').show();
             } else if (title === '请输入项目名称') {
                 $('.sftpForm').hide();
@@ -58,11 +55,6 @@ module.exports = function ($, gulp, path) {
                 $('.compileForm').hide();
 
                 $('.itemForm').show();
-            } else if(title === '编译') {
-                $('.modal-tips').hide();
-                $('.sftpForm').hide();
-                $('.itemForm').hide();
-                $('.compileForm').show();
             } else {
                 $('.sftpForm').hide();
                 $('.itemForm').hide();

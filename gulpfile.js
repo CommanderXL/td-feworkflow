@@ -22,9 +22,6 @@ var handle = [];
 // js or css mini
 var getMiniFn = function (flag) {
     return function (src, dest, revPath, info) {
-
-        //util.modalOperateFn({title: "编译"});
-
         return function () {
             var behavior,
                 stream = gulp.src(src),
@@ -51,7 +48,7 @@ var getMiniFn = function (flag) {
 
                     (function (x) {
                         fs.readdir(_destPath, function (err, destArr) {
-                            destArr.forEach(function (item) {
+                            destArr && destArr.forEach(function (item) {
                                 if (x.test(item)) {
                                     //这个通过gulp的写法为什么有问题
                                     cProcess.exec('rm -rf' + path.resolve(_destPath, item));
@@ -100,7 +97,7 @@ var getMiniFn = function (flag) {
                     .pipe($$.replace($('.md5-src-path').val(), $('.md5-dest-path').val()))
                     .pipe(gulp.dest(dest))
                     .on('end', function () {
-                        util.showLogs('html文件文件版本号添加成功...');
+                        util.showLogs('html文件版本号添加成功...');
                     });
             }
 
@@ -109,7 +106,6 @@ var getMiniFn = function (flag) {
 
                 cb = CssOrJsHandle;
 
-                //modalOperateFn(info);
             } else if (flag === 'html') {
                 behavior = $$.revReplace;
 
@@ -118,7 +114,11 @@ var getMiniFn = function (flag) {
             } else {
                 behavior = $$.imagemin;
 
-                stream.pipe(gulp.dest(dest));
+                stream
+                    .pipe(gulp.dest(dest))
+                    .on('end', function() {
+                        util.showLogs('图片文件复制成功...');
+                    })
             }
 
             cb();
@@ -175,13 +175,27 @@ var operateFn = function (_path, dest, info) {
 
 //点击确认触发按钮操作
 $('.btn-confirm').on('click', function () {
-    for (var i = 0; i < handle.length; i++) {
-        typeof handle[i] === 'function' && handle[i]();
-    }
-
-    handle = [];
+    handleBootstrap();
 });
 
+//关闭模态框按钮操作
+$('.close').click(function () {
+    clearHandle();
+});
+
+//事件触发
+function handleBootstrap() {
+    console.log(handle);
+    for(var i = 0; i < handle.length; i++) {
+        typeof handle[i] === 'function' && handle[i]();
+    }
+    clearHandle();
+}
+
+//清除事件
+function clearHandle() {
+    handle = [];
+}
 
 var init = function () {
     var btn = document.querySelector('button'),
@@ -208,7 +222,7 @@ var init = function () {
                 filename[i],
                 '</div>',
                 '<ul class="btn-box">',
-                '<li><a href="##" class="btn btn-success compile-btn" data-whatever="编译完成" role="button" data-loading-text="编译中....">编译</a></li><li><a href="##" class="btn btn-danger dev-btn" data-whatever="启动完成!" data-tips="PC端访问根路径:localhost:3000;\nMoblie访问根路径:192.168.1.101:3000"  data-loading-text="启动ing..." role="button">开发</a></li><li><a href="##" class="btn btn-info upload-btn" role="button">上传</a></li>',
+                '<li><a href="##" class="btn btn-success compile-btn" data-whatever="编译完成" role="button" data-loading-text="编译中....">编译</a></li><li><a href="##" class="btn btn-danger dev-btn" data-whatever="启动完成!" data-tips="PC端访问根路径:localhost:3000;\nMoblie访问根路径:192.168.1.101:3000"  data-loading-text="启动ing..." role="button">开发</a></li><li><a href="##" class="btn btn-info upload-btn" role="button">上传</a></li><li><a href="##" class="btn btn-warning config-btn" role="button">配置</a></li>',
                 '</ul>',
             ].join('');
 
@@ -236,8 +250,13 @@ var init = function () {
         var srcCssPath = path.resolve(basePath, 'src/css/' + itemName);
         var srcJsPath = path.resolve(basePath, 'src/js/' + itemName);
         var srcHtmlPath = path.resolve(basePath, 'src/pages/' + itemName);
+        var srcImagePath = path.resolve(basePath, 'src/images/' + itemName);
 
-        util.modalOperateFn({ title: '编译' });
+        var itemInfo = getItemNode($(this));
+        //配置文件路径
+        var configFilePath = path.resolve(itemInfo.basePath, 'src/pages/' + itemInfo.itemName + '/workflow1.config.json');
+
+        //util.modalOperateFn({ title: '编译' });
 
         //css打包压缩
         operateFn(srcCssPath, util.getDestPath(srcCssPath));
@@ -245,6 +264,12 @@ var init = function () {
         operateFn(srcJsPath, util.getDestPath(srcJsPath));
         //html打版本号
         operateFn(srcHtmlPath, util.getDestPath(srcHtmlPath));
+        //图片文件
+        operateFn(srcImagePath, util.getDestPath(srcImagePath));
+        //事件触发
+        setTimeout(function() {
+            handleBootstrap();
+        }, 0);
     });
 
     //开发 页面无刷新
@@ -281,21 +306,22 @@ var init = function () {
             if (flag) {
                 gulp.src(configFilePath)
                     .pipe($$.jsonEditor(function (json) {
-                        let cfg = Object.assign(json.sftp),
+                        var cfg = Object.assign(json.sftp),
                             type = json.type;
 
                         util.showLogs('上传文件中ing....');
-
-                        //上传成功回调
-                        cfg.callback = function () {
-                            util.showLogs('文件上传成功');
-                        };
 
                         //判断上传文件类型
                         for (var key in type) {
                             var v = type[key];
 
                             if (v) {
+
+                                //上传成功回调
+                                cfg.callback = function () {
+                                    util.showLogs(key + '文件上传成功');
+                                };
+
                                 var filePath = path.resolve(itemInfo.basePath, key + '/' + itemName);
 
                                 gulp.src(filePath)
@@ -322,18 +348,120 @@ var init = function () {
                         "css": false,
                         "html": false,
                         "images": false
+                    },
+                    "compile": {
+                        "srcCss": "",
+                        "distCss": "",
+                        "srcApi": "",
+                        "distApi": ""
                     }
                 }), function (e) {
-                    if(!e) {
-                        util.showLogs('新建上传配置文件成功...');
+                    if (!e) {
+                        //util.showLogs('新建上传配置文件成功...');
+                        alert('请填写配置信息');
                     }
                 })
             }
         });
     });
 
+    //配置信息
+    $('.list-container').delegate('.config-btn', 'click', function () {
+        util.modalOperateFn({
+            title: '请输入配置信息',
+            tips: '部署'
+        });
+
+        var itemInfo = getItemNode($(this));
+        //配置文件路径
+        var configFilePath = path.resolve(itemInfo.basePath, 'src/pages/' + itemInfo.itemName + '/workflow1.config.json');
+
+        fs.exists(configFilePath, function (flag) {
+            if (flag) {
+                gulp.src(configFilePath)
+                    .pipe($$.jsonEditor(function (json) {
+                        var cfg = Object.assign(json),
+                            sftpCfg = cfg.sftp,
+                            typeCfg = cfg.type,
+                            compileCfg = cfg.compile;
+
+                        //部署服务器配置
+                        $('.host-path').val(sftpCfg.host);
+                        $('.remote-path').val(sftpCfg.remotePath);
+                        $('.host-port').val(sftpCfg.port);
+                        $('.user-name').val(sftpCfg.user);
+                        $('.user-password').val(sftpCfg.pass);
+
+                        //上传文件类型
+                        for (var key in typeCfg) {
+                            console.log(typeCfg[key]);
+                            $('.box-upload-' + key).prop('checked', typeCfg[key] ? true : false);
+                        }
+                        //编译路径替换
+                        $('.css-src-path').val(compileCfg.srcCss);
+                        $('.css-dest-path').val(compileCfg.distCss);
+                        $('.api-src-path').val(compileCfg.srcApi);
+                        $('.api-dest-path').val(compileCfg.distApi);
+
+                        return json;
+                    }))
+            } else {
+                //写入文件
+                fs.writeFile(configFilePath, JSON.stringify({
+                    "sftp": {
+                        "host": "",
+                        "user": "",
+                        "pass": "",
+                        "port": "",
+                        "remotePath": ""
+                    },
+                    "type": {
+                        "js": false,
+                        "css": false,
+                        "html": false,
+                        "images": false
+                    },
+                    "compile": {
+                        "srcCss": "",
+                        "distCss": "",
+                        "srcApi": "",
+                        "distApi": ""
+                    }
+                }), function (e) {
+                    if (!e) {
+                        console.log('新建配置文件');
+                    }
+                })
+            }
+        });
+
+        handle.push(function () {
+            gulp.src(configFilePath)
+                .pipe($$.jsonEditor(function (json) {
+                    json.sftp.host = $('.host-path').val();
+                    json.sftp.user = $('.user-name').val();
+                    json.sftp.pass = $('.user-password').val();
+                    json.sftp.port = $('.host-port').val();
+                    json.sftp.remotePath = $('.remote-path').val();
+
+                    json.type.js = $('.box-upload-js').prop('checked');
+                    json.type.css = $('.box-upload-css').prop('checked');
+                    json.type.html = $('.box-upload-html').prop('checked');
+                    json.type.images = $('.box-upload-images').prop('checked');
+
+                    json.compile.srcCss = $('.css-src-path').val();
+                    json.compile.distCss = $('.css-dest-path').val();
+                    json.compile.srcApi = $('.api-src-path').val();
+                    json.compile.distApi = $('.api-dest-path').val();
+
+                    return json;
+                }))
+                .pipe(gulp.dest(path.resolve(configFilePath, '../')));
+        });
+    });
+
     //服务器部署
-    $('.config-btn').click(function () {
+    /*$('.config-btn').click(function () {
         util.modalOperateFn({
             title: '请输入部署信息',
             tips: '部署'
@@ -365,7 +493,7 @@ var init = function () {
                     util.showLogs('好像出错了?...');
                 })
         });
-    });
+    });*/
 
     /*$('.upload-btn').click(function () {
         var itemInfo = getItemNode($(this));
