@@ -1,6 +1,6 @@
-#taxi-driver fe workflow
+# taxi-driver fe workflow
 
-###Done:
+### Done:
 
 * css压缩,js压缩,路径替换以及打版本号(可选择文件夹或者单/多选文件)
 * image压缩和移位
@@ -10,14 +10,14 @@
 * SFTP上传文件
 * less编译
 
-###Todo:
+### Todo:
 
 * `sass`编译
 * 添加`autoprefixer`等`postcss`插件
 * 生成服务器配置文件
 * 读取工作路径, 避免页面刷新及重启工作路径的丢失
 
-###文件目录结构
+### 文件目录结构
 
 ```javascript
     |-----js
@@ -36,7 +36,7 @@
     |   |----rev(存放了所有文件的md5值)
 ```
 
-##install
+## install
 
 ```javascript
 
@@ -47,7 +47,7 @@
 
 ```
 
-###Howto
+### Howto
 
 1. 点击页面`添加`按钮添加文件， 可以选择文件夹或者具体某一个文件;
 2. 点击`压缩`按钮，`app`将会完成`css`或`js`或`images`的压缩,生成`manifest.json`文件，以及输出到目标文件夹，压缩完毕后弹窗提示.
@@ -58,7 +58,7 @@
 默认设置服务器根目录是`src/`,如果要调试具体页面,则输入相对于的html文件的路径,静态资料使用相对路径.
 
 
-###Tips
+### Tips
 
 * 如果要打包成一个app，安装依赖的时候请通过npm来安装锁定版本号的modules，不要通过cnpm安装
 * `CMD + R`可进行对app进行刷新
